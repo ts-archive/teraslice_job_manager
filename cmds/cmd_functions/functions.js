@@ -57,6 +57,8 @@ module.exports = (argv, clusterName) => {
     function loadAssets() {
         if (argv.a === true) {
             return removeProcessZip()
+                .then(() => updateAssetsMetadata())
+                .then((assetJson) => createJsonFile(`${process.cwd()}/asset/`, assetJson))
                 .then(() => zipAssets())
                 .then(() => addAssets())
                 .catch((err) => {
@@ -107,6 +109,22 @@ module.exports = (argv, clusterName) => {
                 .directory(`${process.cwd()}/asset/`, 'asset')
                 .finalize();
         });
+
+        function updateAssetsMetadata(assetJson){
+            // write asset metadata to asset.json
+            return new Promise((resolve, reject) => {
+                if (_.has(assetJson, 'tjm.clusters')) {
+                    if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
+                        reject(`Assets have already been deployed to ${argv.c}, use update`);
+                    }
+                        assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
+                        resolve(assetJson);
+                } else {
+                    (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
+                    resolve(assetJson)
+                }
+            })
+        }
     }
 
     return {
