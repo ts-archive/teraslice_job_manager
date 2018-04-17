@@ -39,6 +39,20 @@ module.exports = (argv, clusterName) => {
             });
     }
 
+    function loadAssets() {
+        if (argv.a === true) {
+            return removeProcessZip()
+                .then(() => updateAssetsMetadata())
+                .then((assetJson) => createJsonFile(`${process.cwd()}/asset/asset.json`, assetJson))
+                .then(() => zipAssets())
+                .then(() => addAssets())
+                .catch((err) => {
+                    reply.error(err);
+                });
+        }
+        return Promise.resolve(true);
+    }
+
     function createJsonFile(filePath, jsonObject) {
         fs.writeFile(filePath, JSON.stringify(jsonObject, null, 4), (err) => {
             if (err) {
@@ -52,20 +66,6 @@ module.exports = (argv, clusterName) => {
             return `http://${clusterCheck}`;
         }
         return clusterCheck;
-    }
-
-    function loadAssets() {
-        if (argv.a === true) {
-            return removeProcessZip()
-                .then(() => updateAssetsMetadata())
-                .then((assetJson) => createJsonFile(`${process.cwd()}/asset/`, assetJson))
-                .then(() => zipAssets())
-                .then(() => addAssets())
-                .catch((err) => {
-                    reply.error(err.message);
-                });
-        }
-        return Promise.resolve(true);
     }
 
     function removeProcessZip() {
@@ -109,22 +109,23 @@ module.exports = (argv, clusterName) => {
                 .directory(`${process.cwd()}/asset/`, 'asset')
                 .finalize();
         });
+    }
 
-        function updateAssetsMetadata(assetJson){
-            // write asset metadata to asset.json
-            return new Promise((resolve, reject) => {
-                if (_.has(assetJson, 'tjm.clusters')) {
-                    if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
-                        reject(`Assets have already been deployed to ${argv.c}, use update`);
-                    }
-                        assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
-                        resolve(assetJson);
-                } else {
-                    (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
-                    resolve(assetJson)
+    function updateAssetsMetadata() {
+        // write asset metadata to asset.json
+        return new Promise((resolve, reject) => {
+            const assetJson = require(`${process.cwd()}/asset/asset.json`);
+            if (_.has(assetJson, 'tjm.clusters')) {
+                if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
+                    reject(`Assets have already been deployed to ${argv.c}, use update`);
                 }
-            })
-        }
+                    assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
+                    resolve(assetJson);
+            } else {
+                (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
+                resolve(assetJson)
+            }
+        })
     }
 
     return {
