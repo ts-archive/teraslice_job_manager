@@ -1,7 +1,7 @@
 # teraslice_job_manager
 Command line job management helper.
 
-Teraslice job manager uses data in the job file to know what cluster and job id are associated with a job.  Once a job is registed using tjm metadata is added to the job file as tjm: { job_id: jobid, cluster: clusterName, version: verssion}.  The tjm data is then referenced for other functions with the teraslice job manager.
+Teraslice job manager uses data in the job file for the cluster and job id associated with a job.  Once a job is registed using tjm metadata is added to the job file as tjm: { job_id: jobid, cluster: clusterName, version: verssion}.  The tjm data is then referenced by the teraslice job manager for other functions.
 
 
 ## Installation
