@@ -4,31 +4,24 @@ const fs = require('fs');
 
 const argv = {};
 const tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
+const Promise = require('bluebird');
+
+let jobContents;
+let someJobId;
+const _teraslice = {
+    jobs: {
+        wrap: (jobContents) => {
+                return { spec: () => {
+                    return Promise.resolve({
+                        job_id: someJobId
+                    })
+                }
+            }
+        }
+    }
+};
 
 describe('teraslice job manager testing', () => {
-
-    it('ensure that build/processors.zip is cleared and built again', () => {
-        const zipPath = `${process.cwd()}/builds/processors.zip`;
-
-        function checkZipExists() {
-            try {
-                fs.accessSync(zipPath, fs.F_OK);
-            } catch (e) {
-                return false;
-            }
-            return true;
-        }
-
-        fs.writeFileSync(zipPath, 'this is some text', {});
-        expect(checkZipExists()).toBe(true);
-        tjmFunctions.removeProcessZip()
-            .then(() => expect(checkZipExists()).toBe(false))
-            .then(() => {
-                tjmFunctions.zipAssets();
-            })
-            .then(() => expect(checkZipExists()).toBe(true));
-    });
-
     it('check that data is added to the json file', () => {
         const jsonObj = {
             info: 'very important info'
@@ -61,4 +54,35 @@ describe('teraslice job manager testing', () => {
         expect((jobData[1]).test).toBe('test');
         fs.unlinkSync(`${process.cwd()}/tfile.prod.json`);
     });
+
+    fit('registered jobs return true, unregistered jobs return false', () => {
+        jobContents = {
+            tjm: {
+                cluster: 'http://localhost',
+                job_id: 'jobYouAreLookingFor'
+            }
+        };
+
+        someJobId = 'jobYouAreLookingFor';
+
+        tjmFunctions.__testContext(_teraslice);
+        tjmFunctions.alreadyRegisteredCheck(jobContents)
+            .then(alreadyRegistered => {
+                expect(alreadyRegistered).toBe(true);
+            });
+
+        someJobId = 'notTheJobYouAreLookingFor';
+        tjmFunctions.alreadyRegisteredCheck(jobContents)
+        .then(alreadyRegistered => {
+            expect(alreadyRegistered).toBe(false);
+        });
+
+        jobContents = {}
+        someJobId = 'jobYouAreLookingFor';
+        tjmFunctions.alreadyRegisteredCheck(jobContents)
+        .then(alreadyRegistered => {
+            expect(alreadyRegistered).toBe(false);
+        });
+        
+    })
 });

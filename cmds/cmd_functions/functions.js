@@ -1,22 +1,24 @@
 'use strict';
 
 const _ = require('lodash');
-const fs = require('fs');
+const fs = require('fs-extra');
 const archiver = require('archiver');
 const Promise = require('bluebird');
 const reply = require('./reply')();
+const path = require('path');
+const writeFile = Promise.promisify(require('fs').writeFile);
 
 module.exports = (argv, clusterName) => {
     const cluster = clusterName || argv.c;
 
-    const teraslice = require('teraslice-client-js')({
+    let teraslice = require('teraslice-client-js')({
         host: `${httpClusterNameCheck(cluster)}:5678`
     });
 
     function alreadyRegisteredCheck(jobContents) {
         if (_.has(jobContents, 'tjm.cluster')) {
             return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
-                .then((jobSpec) => {
+                .then((jobSpec) => {    
                     if (jobSpec.job_id === jobContents.tjm.job_id) {
                         return Promise.resolve(true);
                     }
@@ -27,7 +29,7 @@ module.exports = (argv, clusterName) => {
     }
 
     function addAssets() {
-        const zname = fs.readFileSync(`${process.cwd()}/builds/processors.zip`);
+        const zname = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
         return teraslice.assets.post(zname)
             .then((asset) => {
                 const msg = JSON.parse(asset);
@@ -41,11 +43,13 @@ module.exports = (argv, clusterName) => {
 
     function loadAssets() {
         if (argv.a === true) {
-            return removeProcessZip()
+            return fs.emptyDir(process.cwd(), 'builds')
                 .then(() => updateAssetsMetadata())
-                .then((assetJson) => createJsonFile(`${process.cwd()}/asset/asset.json`, assetJson))
-                .then(() => zipAssets())
-                .then(() => addAssets())
+                .then((assetJson) => {
+                    console.log(assetJson);
+                    createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)})
+                //.then(() => zipAssets())
+                //.then(() => addAssets())
                 .catch((err) => {
                     reply.error(err);
                 });
@@ -54,11 +58,7 @@ module.exports = (argv, clusterName) => {
     }
 
     function createJsonFile(filePath, jsonObject) {
-        fs.writeFile(filePath, JSON.stringify(jsonObject, null, 4), (err) => {
-            if (err) {
-                reply.error(err.message);
-            }
-        });
+        return writeFile(filePath, JSON.stringify(jsonObject, null, 4));
     }
 
     function httpClusterNameCheck(clusterCheck) {
@@ -68,28 +68,9 @@ module.exports = (argv, clusterName) => {
         return clusterCheck;
     }
 
-    function removeProcessZip() {
-        const assetsPath = `${process.cwd()}/builds/processors.zip`;
-        const buildsPath = `${process.cwd()}/builds`;
-
-        return new Promise((resolve, reject) => {
-            fs.unlink(assetsPath, (err) => {
-                if (err && err.code === 'ENOENT') {
-                    fs.mkdir(buildsPath, (buildsErr) => {
-                        if (buildsErr && buildsErr.code !== 'EEXIST') {
-                            reject(buildsErr);
-                        }
-                        resolve();
-                    });
-                }
-                resolve();
-            });
-        });
-    }
-
     function zipAssets() {
         return new Promise((resolve, reject) => {
-            const output = fs.createWriteStream(`${process.cwd()}/builds/processors.zip`);
+            const output = fs.createWriteStream(path.join(process.cwd(), 'builds', 'processors.zip'));
             const archive = archiver('zip', {
                 zlib: { level: 9 } // Sets the compression level.
             });
@@ -97,7 +78,7 @@ module.exports = (argv, clusterName) => {
             output.on('finish', () => {
                 reply.success(`${archive.pointer()} total bytes`);
                 reply.success('Assets have been zipped to builds/processors.zip');
-                return resolve();
+                resolve();
             });
 
             archive.on('error', (err) => {
@@ -106,26 +87,35 @@ module.exports = (argv, clusterName) => {
 
             archive.pipe(output);
             archive
-                .directory(`${process.cwd()}/asset/`, 'asset')
+                .directory(path.join(process.cwd(), 'asset'), 'asset')
                 .finalize();
         });
     }
 
     function updateAssetsMetadata() {
-        // write asset metadata to asset.json
-        return new Promise((resolve, reject) => {
-            const assetJson = require(`${process.cwd()}/asset/asset.json`);
-            if (_.has(assetJson, 'tjm.clusters')) {
-                if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
-                    reject(`Assets have already been deployed to ${argv.c}, use update`);
-                }
-                    assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
-                    resolve(assetJson);
-            } else {
-                (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
-                resolve(assetJson)
+        // writes asset metadata to asset.json
+        let assetJson;
+        
+        try {
+            assetJson = require(path.join(process.cwd(),'asset', 'asset.json'));
+        } catch(err) {
+            reply.error(`Could not load asset.json: ${err.message}`);
+        }
+
+        if (_.has(assetJson, 'tjm.clusters')) {
+            if (_.indexOf(assetJson.tjm.clusters, argv.c) >= 0) {
+                reply.error(`Assets have already been deployed to ${argv.c}, use update`);
             }
-        })
+                assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
+                return assetJson;
+        } else {
+            (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
+            return assetJson
+        }
+    }
+
+    function __testContext(_teraslice) {
+        teraslice = _teraslice;
     }
 
     return {
@@ -135,7 +125,8 @@ module.exports = (argv, clusterName) => {
         loadAssets,
         createJsonFile,
         teraslice,
-        removeProcessZip,
         zipAssets,
+        __testContext,
+        updateAssetsMetadata
     };
 };

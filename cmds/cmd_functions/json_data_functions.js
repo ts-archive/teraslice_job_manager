@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const path = require('path');
 const reply = require('./reply')();
 
 module.exports = (fileName, asset) => {
@@ -18,7 +19,7 @@ module.exports = (fileName, asset) => {
         if (asset) {
             fName = `asset/${fileName}`;
         }
-        const jobFilePath = `${process.cwd()}/${fName}`;
+        const jobFilePath = path.join(process.cwd(), fName);
         let jobContents;
 
         try {
