@@ -1,10 +1,10 @@
 'use strict';
 
-const fs = require('fs');
-
+const fs = require('fs-extra');
 const argv = {};
 const tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
 const Promise = require('bluebird');
+const path = require('path');
 
 let jobContents;
 let someJobId;
@@ -22,22 +22,6 @@ const _teraslice = {
 };
 
 describe('teraslice job manager testing', () => {
-    it('check that data is added to the json file', () => {
-        const jsonObj = {
-            info: 'very important info'
-        };
-
-        const filePath = (`${__dirname}/tfile.json`);
-        jsonObj.tjm = {
-            cluster: 'http://localhost'
-        };
-
-        Promise.resolve(() => tjmFunctions.createJsonFile(filePath, jsonObj))
-            .then(() => JSON.parse(fs.readFileSync(filePath, 'utf8')))
-            .then(tfile => expect(tfile.tjm.cluster).toBe('http://localhost'))
-            .then(() => fs.unlink(filePath));
-    });
-
     it('check that cluster name starts with http', () => {
         expect(tjmFunctions.httpClusterNameCheck('localhost')).toBe('http://localhost');
         expect(tjmFunctions.httpClusterNameCheck('http://localhost')).toBe('http://localhost');
@@ -55,7 +39,7 @@ describe('teraslice job manager testing', () => {
         fs.unlinkSync(`${process.cwd()}/tfile.prod.json`);
     });
 
-    fit('registered jobs return true, unregistered jobs return false', () => {
+    it('registered jobs return true, unregistered jobs return false', () => {
         jobContents = {
             tjm: {
                 cluster: 'http://localhost',
@@ -83,6 +67,17 @@ describe('teraslice job manager testing', () => {
         .then(alreadyRegistered => {
             expect(alreadyRegistered).toBe(false);
         });
-        
+
+    })
+
+    fit('assets are zipped and loaded to cluster', () => {
+        const assetJson = {
+            
+        }
+        // create assets
+        // run load assets
+        // check that zip file exists
+        // correct response from server
+        // metadata added to asset.json
     })
 });
