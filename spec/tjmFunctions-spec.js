@@ -29,14 +29,14 @@ describe('teraslice job manager testing', () => {
     });
 
     it('check that job files do not have to end in json', () => {
-        fs.writeFileSync(`${process.cwd()}/tfile.prod.json`, JSON.stringify({ test: 'test' }));
+        fs.writeFileSync(path.join(process.cwd(), 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod.json');
         let jobData = jobFileFunctions.jobFileHandler();
         expect((jobData[1]).test).toBe('test');
         jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod');
         jobData = jobFileFunctions.jobFileHandler();
         expect((jobData[1]).test).toBe('test');
-        fs.unlinkSync(`${process.cwd()}/tfile.prod.json`);
+        fs.unlinkSync(path.join(process.cwd(), 'tfile.prod.json'));
     });
 
     it('registered jobs return true, unregistered jobs return false', () => {
@@ -80,15 +80,14 @@ describe('teraslice job manager testing', () => {
         const assetPath = path.join(process.cwd(), 'asset/asset.json');
         
         argv.c = 'http://localhost';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
-        fs.emptyDir(path.join(process.cwd(), 'asset'))
-            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
-            .then(() => tjmFunctions.updateAssetsMetadata())
-            .then((assetJson) => {
-                expect(assetJson.tjm).toBeDefined();
-                expect(assetJson.tjm.clusters[0]).toBe('http://localhost');
-            })
-            .catch(err => console.log(err));
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+
+        fs.emptyDirSync(path.join(process.cwd(), 'asset'));
+        fs.writeJsonSync(assetPath, assetJson, {spaces: 4});
+        const jsonResult = tjmFunctions.updateAssetsMetadata();
+        expect(jsonResult.tjm).toBeDefined();
+        expect(jsonResult.tjm.clusters[0]).toBe('http://localhost');
+        fs.removeSync(path.join(process.cwd(), 'asset'));
     })
 
     it('cluster is added to array in asset.json if a new cluster', () => {
@@ -105,27 +104,24 @@ describe('teraslice job manager testing', () => {
         
         argv.c = 'http://newCluster';
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
-        fs.emptyDir(path.join(process.cwd(), 'asset'))
-            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
-            .then(() => tjmFunctions.updateAssetsMetadata())
-            .then((assetJson) => {
-                expect(assetJson.tjm).toBeDefined();
-                expect(assetJson.tjm.clusters[0]).toBe('http://localhost');
-                expect(assetJson.tjm.clusters[1]).toBe('http://newCluster');
-            })
-            .catch(err => console.log(err));
+        fs.emptyDirSync(path.join(process.cwd(), 'asset'));
+        fs.writeJsonSync(assetPath, assetJson, {spaces: 4});
+        const jsonResult = tjmFunctions.updateAssetsMetadata();
+        expect(jsonResult.tjm).toBeDefined();
+        expect(jsonResult.tjm.clusters[0]).toBe('http://localhost');
+        expect(jsonResult.tjm.clusters[1]).toBe('http://newCluster');
+        fs.removeSync(path.join(process.cwd(), 'asset'));
     })
 
-    fit('no asset.json throw error', () => {
+    it('no asset.json throw error', () => {
         const assetPath = path.join(process.cwd(), 'asset/asset.json');
-        argv.c = 'http://newCluster';
-
+        argv.c = 'http://localhost'
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
-        fs.emptyDir(path.join(process.cwd(), 'asset'))
-            .then(() => expect(tjmFunctions.updateAssetsMetadata).toThrow());
+        fs.emptyDirSync(path.join(process.cwd(), 'asset'));
+        expect(tjmFunctions.updateAssetsMetadata).toThrow();
     })
-
-    fit('if cluster already in metadata throw error', () => {
+    
+    it('if cluster already in metadata throw error', () => {
         const assetJson = {
             name: 'testing 123',
             version: '0.0.01',
@@ -138,10 +134,8 @@ describe('teraslice job manager testing', () => {
         const assetPath = path.join(process.cwd(), 'asset/asset.json');
         argv.c = 'http://localhost';
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
-        fs.emptyDir(path.join(process.cwd(), 'asset'))
-            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
-            .then(() => {
-                expect(tjmFunctions.updateAssetsMetadata).toThrow('Assets have already been deployed to http://localhost, use update')});
+        fs.emptyDirSync(path.join(process.cwd(), 'asset'));
+        fs.writeJsonSync(assetPath, assetJson, {spaces: 4});
+        expect(tjmFunctions.updateAssetsMetadata).toThrow('Assets have already been deployed to http://localhost, use update');
     })
-    
 });
