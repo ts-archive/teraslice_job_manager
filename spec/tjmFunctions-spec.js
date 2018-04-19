@@ -138,4 +138,44 @@ describe('teraslice job manager testing', () => {
         fs.writeJsonSync(assetPath, assetJson, {spaces: 4});
         expect(tjmFunctions.updateAssetsMetadata).toThrow('Assets have already been deployed to http://localhost, use update');
     })
+
+    it('check that assets are zipped', () => {
+        const assetJson = {
+            name: 'testing 123',
+            version: '0.0.01',
+            description: 'dummy asset.json for testing',
+            tjm: {
+                clusters: [ 'http://localhost', 'http://newCluster', 'http://anotherCluster' ]
+            }
+        }
+
+        const packageJson = {
+            name: 'common_processors',
+            version: '0.0.29',
+            description: 'Processing modules that are common across data types',
+            main: "index.js"
+        }
+
+        const assetPath = path.join(process.cwd(), 'asset/asset.json');
+        const packagePath = path.join(process.cwd(), 'asset/package.json');
+        fs.emptyDirSync(path.join(process.cwd(), 'asset'));
+        fs.writeJsonSync(assetPath, assetJson, {spaces: 4});
+        fs.writeJsonSync(packagePath, packageJson, {spaces: 4});
+
+        fs.emptyDirSync(path.join(process.cwd(), 'builds'));
+       
+        return tjmFunctions.zipAssets()
+        .then(() => fs.pathExists(path.join(process.cwd(), 'builds/processors.zip')))
+        .then(exists => {
+            expect(exists).toBe(true);
+        });
+
+    })
+
+    it('check that load assets works', () => {
+        // create assets
+        // run load assets
+        // check for zipped file in builds
+        // remove builds
+    })
 });
