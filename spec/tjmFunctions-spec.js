@@ -2,7 +2,7 @@
 
 const fs = require('fs-extra');
 const argv = {};
-const tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
+let tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
 const Promise = require('bluebird');
 const path = require('path');
 
@@ -70,14 +70,78 @@ describe('teraslice job manager testing', () => {
 
     })
 
-    fit('assets are zipped and loaded to cluster', () => {
+    it('meta data is being written to assets.json ', () => {
         const assetJson = {
-            
+            name: 'testing 123',
+            version: '0.0.01',
+            description: 'dummy asset.json for testing'
         }
-        // create assets
-        // run load assets
-        // check that zip file exists
-        // correct response from server
-        // metadata added to asset.json
+
+        const assetPath = path.join(process.cwd(), 'asset/asset.json');
+        
+        argv.c = 'http://localhost';
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost');
+        fs.emptyDir(path.join(process.cwd(), 'asset'))
+            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
+            .then(() => tjmFunctions.updateAssetsMetadata())
+            .then((assetJson) => {
+                expect(assetJson.tjm).toBeDefined();
+                expect(assetJson.tjm.clusters[0]).toBe('http://localhost');
+            })
+            .catch(err => console.log(err));
     })
+
+    it('cluster is added to array in asset.json if a new cluster', () => {
+        const assetJson = {
+            name: 'testing 123',
+            version: '0.0.01',
+            description: 'dummy asset.json for testing',
+            tjm: {
+                clusters: [ 'http://localhost' ]
+            }
+        }
+
+        const assetPath = path.join(process.cwd(), 'asset/asset.json');
+        
+        argv.c = 'http://newCluster';
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        fs.emptyDir(path.join(process.cwd(), 'asset'))
+            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
+            .then(() => tjmFunctions.updateAssetsMetadata())
+            .then((assetJson) => {
+                expect(assetJson.tjm).toBeDefined();
+                expect(assetJson.tjm.clusters[0]).toBe('http://localhost');
+                expect(assetJson.tjm.clusters[1]).toBe('http://newCluster');
+            })
+            .catch(err => console.log(err));
+    })
+
+    fit('no asset.json throw error', () => {
+        const assetPath = path.join(process.cwd(), 'asset/asset.json');
+        argv.c = 'http://newCluster';
+
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        fs.emptyDir(path.join(process.cwd(), 'asset'))
+            .then(() => expect(tjmFunctions.updateAssetsMetadata).toThrow());
+    })
+
+    fit('if cluster already in metadata throw error', () => {
+        const assetJson = {
+            name: 'testing 123',
+            version: '0.0.01',
+            description: 'dummy asset.json for testing',
+            tjm: {
+                clusters: [ 'http://localhost', 'http://newCluster', 'http://anotherCluster' ]
+            }
+        }
+
+        const assetPath = path.join(process.cwd(), 'asset/asset.json');
+        argv.c = 'http://localhost';
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        fs.emptyDir(path.join(process.cwd(), 'asset'))
+            .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
+            .then(() => {
+                expect(tjmFunctions.updateAssetsMetadata).toThrow('Assets have already been deployed to http://localhost, use update')});
+    })
+    
 });
