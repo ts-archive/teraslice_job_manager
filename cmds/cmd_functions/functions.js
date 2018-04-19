@@ -43,11 +43,9 @@ module.exports = (argv, clusterName) => {
 
     function loadAssets() {
         if (argv.a === true) {
-            return fs.emptyDir(process.cwd(), 'builds')
+                return fs.emptyDir(process.cwd(), 'builds')
                 .then(() => updateAssetsMetadata())
-                .then((assetJson) => {
-                    console.log(assetJson);
-                    createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)})
+                .then(() => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
                 //.then(() => zipAssets())
                 //.then(() => addAssets())
                 .catch((err) => {
@@ -109,7 +107,7 @@ module.exports = (argv, clusterName) => {
                 assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
                 return assetJson;
         } else {
-            (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
+            (_.set(assetJson, 'tjm.clusters', [ httpClusterNameCheck(argv.c) ]));
             return assetJson
         }
     }
