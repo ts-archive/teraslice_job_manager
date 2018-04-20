@@ -25,31 +25,8 @@ exports.handler = (argv) => {
     const tjmFunctions = require('./cmd_functions/functions')(argv);
     const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
-    function latestAssetVersion(cluster, assetName) {
-        // parses client response for asset versions on cluster and returns latest version
-        const teraslice = require('teraslice-client-js')({
-            host: `${tjmFunctions.httpClusterNameCheck(cluster)}:5678`
-        });
-
-        teraslice.cluster.txt(`assets/${assetName}`)
-            .then((result) => {
-                const byLine = result.split('\n');
-                const trimTop = byLine.slice(2);
-                trimTop.pop();
-                const latest = trimTop.map(item => item.split(' ')
-                    .filter(i => i !== ''))
-                    .reduce((high, item) => {
-                        return parseInt(item[1].split('.').join(''), 10) > high ? item : high;
-                    }, 0);
-
-                reply.success(`Cluster: ${cluster}, Name: ${latest[0]}, Version: ${latest[1]}`);
-            })
-            .catch(err => reply.error(err.message));
-    }
-
     if (argv.cmd === 'deploy') {
         // add cluster to json file first
-
         Promise.resolve()
             .then(() => tjmFunctions.updateAssetsMetadata())
             .then(() => tjmFunctions.loadAssets())
@@ -78,6 +55,28 @@ exports.handler = (argv) => {
             .catch(err => reply.error((err.message)));
     } else if (argv.cmd === 'status') {
         // if the asset is not on the cluster than this will error out
+        function latestAssetVersion(cluster, assetName) {
+            // parses client response for asset versions on cluster and returns latest version
+            const teraslice = require('teraslice-client-js')({
+                host: `${tjmFunctions.httpClusterNameCheck(cluster)}:5678`
+            });
+    
+            teraslice.cluster.txt(`assets/${assetName}`)
+                .then((result) => {
+                    const byLine = result.split('\n');
+                    const trimTop = byLine.slice(2);
+                    trimTop.pop();
+                    const latest = trimTop.map(item => item.split(' ')
+                        .filter(i => i !== ''))
+                        .reduce((high, item) => {
+                            return parseInt(item[1].split('.').join(''), 10) > high ? item : high;
+                        }, 0);
+    
+                    reply.success(`Cluster: ${cluster}, Name: ${latest[0]}, Version: ${latest[1]}`);
+                })
+                .catch(err => reply.error(err.message));
+        }
+
         if (clusters.length === 0) {
             reply.error('Clusters data is missing from asset.json. Use \'tjm asset deploy\' first');
         }

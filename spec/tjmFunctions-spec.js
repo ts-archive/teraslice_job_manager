@@ -172,11 +172,4 @@ describe('teraslice job manager testing', () => {
         .catch((err) => console.log(err));
 
     })
-
-    it('check that load assets works', () => {
-        // create assets
-        // run load assets
-        // check for zipped file in builds
-        // remove builds
-    })
 });
