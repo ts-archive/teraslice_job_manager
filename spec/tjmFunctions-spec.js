@@ -168,7 +168,8 @@ describe('teraslice job manager testing', () => {
         .then(() => fs.pathExists(path.join(process.cwd(), 'builds/processors.zip')))
         .then(exists => {
             expect(exists).toBe(true);
-        });
+        })
+        .catch((err) => console.log(err));
 
     })
 

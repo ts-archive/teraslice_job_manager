@@ -43,11 +43,10 @@ module.exports = (argv, clusterName) => {
 
     function loadAssets() {
         if (argv.a === true) {
-                return fs.emptyDir(process.cwd(), 'builds')
-                .then(() => updateAssetsMetadata())
+                return fs.emptyDir(path.join(process.cwd(), 'builds'))
                 .then(() => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
-                //.then(() => zipAssets())
-                //.then(() => addAssets())
+                .then(() => zipAssets())
+                .then(() => addAssets())
                 .catch((err) => {
                     reply.error(err);
                 });
