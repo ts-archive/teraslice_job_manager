@@ -49,8 +49,9 @@ exports.handler = (argv) => {
 
     if (argv.cmd === 'deploy') {
         // add cluster to json file first
+        console.log(assetJson);
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
+            if (_.indexOf(assetJson.tjm.clusters, argv.c) >= 0) {
                 reply.error(`Assets have already been deployed to ${argv.c}, use update`);
             }
             assetJson.tjm.clusters.push(tjmFunctions.httpClusterNameCheck(argv.c));
@@ -85,6 +86,7 @@ exports.handler = (argv) => {
             })
             .catch(err => reply.error((err.message)));
     } else if (argv.cmd === 'status') {
+        // if the asset is not on the cluster than this will error out
         if (clusters.length === 0) {
             reply.error('Clusters data is missing from asset.json. Use \'tjm asset deploy\' first');
         }

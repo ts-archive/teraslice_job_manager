@@ -113,10 +113,11 @@ module.exports = (argv, clusterName) => {
 
     function updateAssetsMetadata() {
         // write asset metadata to asset.json
+        // TODO this is a redundent function - remove from assets deploy and reference this function or remove from assets function
         return new Promise((resolve, reject) => {
             const assetJson = require(`${process.cwd()}/asset/asset.json`);
             if (_.has(assetJson, 'tjm.clusters')) {
-                if (_.indexOf(assetJson.tjm.clusters, argv.c) < 0) {
+                if (_.indexOf(assetJson.tjm.clusters, argv.c) >= 0) {
                     reject(`Assets have already been deployed to ${argv.c}, use update`);
                 }
                     assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
