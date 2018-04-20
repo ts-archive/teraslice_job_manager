@@ -44,7 +44,6 @@ module.exports = (argv, clusterName) => {
     function loadAssets() {
         if (argv.a === true) {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
-                .then(() => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
                 .then(() => zipAssets())
                 .then(() => addAssets())
                 .catch((err) => {
@@ -102,6 +101,7 @@ module.exports = (argv, clusterName) => {
         if (_.has(assetJson, 'tjm.clusters')) {
             if (_.indexOf(assetJson.tjm.clusters, argv.c) >= 0) {
                 reply.error(`Assets have already been deployed to ${argv.c}, use update`);
+
             }
                 assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
                 return assetJson;
