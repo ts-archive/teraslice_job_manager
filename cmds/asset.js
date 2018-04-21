@@ -27,10 +27,14 @@ exports.handler = (argv) => {
 
     if (argv.cmd === 'deploy') {
         // add cluster to json file first
+        console.log(argv);
+        /*
         Promise.resolve()
             .then(() => tjmFunctions.updateAssetsMetadata())
             .then(() => tjmFunctions.loadAssets())
             .catch(err => reply.error(err.message));
+            */
+
     } else if (argv.cmd === 'update') {
         if (clusters.length === 0) {
             reply.error('Clusters data is missing from asset.json.  Use \'tjm asset deploy\' first');

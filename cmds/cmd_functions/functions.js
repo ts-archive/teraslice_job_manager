@@ -29,15 +29,10 @@ module.exports = (argv, clusterName) => {
     }
 
     function addAssets() {
-        const zname = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
-        return teraslice.assets.post(zname)
-            .then((asset) => {
-                const msg = JSON.parse(asset);
-                if (msg.error) {
-                    reply.error(msg.error);
-                } else {
-                    reply.success(`Asset ${msg._id} successfully loaded`);
-                }
+        const zipFileName = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
+        return teraslice.assets.post(zipFileName)
+            .then((assetPostResponse) => {
+                return assetPostResponse;
             });
     }
 
@@ -65,6 +60,8 @@ module.exports = (argv, clusterName) => {
     }
 
     function zipAssets() {
+        const zipMessage = {};
+
         return new Promise((resolve, reject) => {
             const output = fs.createWriteStream(path.join(process.cwd(), 'builds', 'processors.zip'));
             const archive = archiver('zip', {
@@ -72,9 +69,9 @@ module.exports = (argv, clusterName) => {
             });
 
             output.on('finish', () => {
-                reply.success(`${archive.pointer()} total bytes`);
-                reply.success('Assets have been zipped to builds/processors.zip');
-                resolve();
+                zipMessage.bytes = `${archive.pointer()} total bytes`;
+                zipMessage.success = 'Assets have been zipped to builds/processors.zip';
+                resolve(zipMessage);
             });
 
             archive.on('error', (err) => {
