@@ -52,13 +52,14 @@ function createNewAsset() {
     fs.writeJsonSync(packagePath, packageJson, {spaces: 4});
 }
 
-function cleanUp() {
-    Promise.all([fs.remove(path.join(process.cwd(), 'builds')),
-        fs.remove(path.join(process.cwd(), 'asset'))])
-    
-}
-
 describe('tjmFunctions testing', () => {
+    afterAll(() => {
+        return Promise.all([
+            fs.remove(path.join(process.cwd(), 'builds')),
+            fs.remove(path.join(process.cwd(), 'asset'))
+        ]);
+    });
+
     it('check that cluster name starts with http', () => {
         expect(tjmFunctions.httpClusterNameCheck('localhost')).toBe('http://localhost');
         expect(tjmFunctions.httpClusterNameCheck('http://localhost')).toBe('http://localhost');
