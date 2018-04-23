@@ -28,7 +28,7 @@ module.exports = (argv, clusterName) => {
         return Promise.resolve(false);
     }
 
-    function addAssets() {
+    function _addAsset() {
         const zipFileName = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
         return teraslice.assets.post(zipFileName)
             .then((assetPostResponse) => {
@@ -36,14 +36,19 @@ module.exports = (argv, clusterName) => {
             });
     }
 
-    function loadAssets() {
+    function loadAsset() {
+        // removes builds
+        // adds metadata
+        // zips 
+        // adds to cluster
         if (argv.a === true) {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
-                .then(() => zipAssets())
-                .then(() => addAssets())
-                .catch((err) => {
-                    reply.error(err);
-                });
+                    .then(() => updateAssetMetadata())
+                    .then(() => zipAsset())
+                    .then(() => addAsset())
+                    .catch((err) => {
+                        reply.error(err);
+                    });
         }
         return Promise.resolve(true);
     }
@@ -59,7 +64,7 @@ module.exports = (argv, clusterName) => {
         return clusterCheck;
     }
 
-    function zipAssets() {
+    function _zipAsset() {
         const zipMessage = {};
 
         return new Promise((resolve, reject) => {
@@ -85,7 +90,7 @@ module.exports = (argv, clusterName) => {
         });
     }
 
-    function updateAssetsMetadata() {
+    function _updateAssetMetadata() {
         // writes asset metadata to asset.json
         let assetJson;
         
@@ -109,18 +114,25 @@ module.exports = (argv, clusterName) => {
     }
 
     function __testContext(_teraslice) {
-        teraslice = _teraslice;
+        teraslice = _teraslice
+    }
+
+    function __testFunctions() {
+        return { 
+            _updateAssetMetadata,
+            _zipAsset,
+            _addAsset
+        }
     }
 
     return {
-        addAssets,
         alreadyRegisteredCheck,
         httpClusterNameCheck,
-        loadAssets,
+        loadAsset,
         createJsonFile,
         teraslice,
-        zipAssets,
         __testContext,
-        updateAssetsMetadata
+        __testFunctions,
+        _updateAssetMetadata
     };
 };
