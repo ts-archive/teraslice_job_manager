@@ -37,15 +37,12 @@ module.exports = (argv, clusterName) => {
     }
 
     function loadAsset() {
-        // removes builds
-        // adds metadata
-        // zips 
-        // adds to cluster
         if (argv.a === true) {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
-                    .then(() => updateAssetMetadata())
-                    .then(() => zipAsset())
-                    .then(() => addAsset())
+                    .then(() => _updateAssetMetadata())
+                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
+                    .then(() => _zipAsset())
+                    .then(() => _addAsset())
                     .catch((err) => {
                         reply.error(err);
                     });

@@ -66,17 +66,6 @@ describe('tjmFunctions testing', () => {
         expect(tjmFunctions.httpClusterNameCheck('https://localhost')).toBe('https://localhost');
     });
 
-    it('check that job files do not have to end in json', () => {
-        fs.writeFileSync(path.join(process.cwd(), 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod.json');
-        let jobData = jobFileFunctions.jobFileHandler();
-        expect((jobData[1]).test).toBe('test');
-        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod');
-        jobData = jobFileFunctions.jobFileHandler();
-        expect((jobData[1]).test).toBe('test');
-        fs.unlinkSync(path.join(process.cwd(), 'tfile.prod.json'));
-    });
-
     it('registered jobs return true, unregistered jobs return false', () => {
         jobContents = {
             tjm: {
@@ -185,8 +174,30 @@ describe('tjmFunctions testing', () => {
             });
     })
 
-    fit('load asset removes build, adds metadata to asset, zips asset, posts to cluster', () => {
-        // coming soon;
-    });
+    it('load asset removes build, adds metadata to asset, zips asset, posts to cluster', () => {
+        // create new asset
+        createNewAsset();
+        assetObject = { 
+            success: 'this worked',
+            _id: '1235fakejob'
+        }
+
+        // define cluster in argv
+        argv.c = 'localhost'
+        argv.a = true;
+        tjmFunctions.__testContext(_teraslice);
+        fs.emptyDirSync(path.join(process.cwd(), 'builds'));
+        return Promise.resolve()
+            .then(() => tjmFunctions.loadAsset())
+            .then(postAssetResponse => {
+                const updatedAssetJson = require(path.join(process.cwd(), 'asset/asset.json'));
+                expect(postAssetResponse.success).toBe('this worked');
+                expect(postAssetResponse._id).toBe('1235fakejob');
+                expect(updatedAssetJson.tjm.clusters[0]).toBe('http://localhost');
+                expect(fs.pathExistsSync(path.join(process.cwd(), 'builds/processors.zip'))).toBe(true);
+                expect(fs.pathExistsSync(path.join(process.cwd(), 'asset/package.json'))).toBe(true);
+            })
+            .catch(err => console.log(err));
+    })
 
 });
