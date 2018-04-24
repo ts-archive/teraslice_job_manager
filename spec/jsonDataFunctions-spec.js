@@ -6,12 +6,12 @@ const path = require('path');
 describe('tests jsonDataFunctions', () => {
     it('job files do not have to end in json', () => {
         fs.writeFileSync(path.join(process.cwd(), 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod.json');
-        let jobData = jobFileFunctions.jobFileHandler();
+        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        let jobData = jobFileFunctions.jobFileHandler('tfile.prod.json');
         expect((jobData[1]).test).toBe('test');
 
-        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('tfile.prod');
-        jobData = jobFileFunctions.jobFileHandler();
+        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        jobData = jobFileFunctions.jobFileHandler('tfile.prod');
         expect((jobData[1]).test).toBe('test');
         fs.unlinkSync(path.join(process.cwd(), 'tfile.prod.json'));
     });
@@ -24,18 +24,49 @@ describe('tests jsonDataFunctions', () => {
     it('path should change to asset/jsonFile if true as second function input', () => {
         fs.emptyDirSync(path.join(process.cwd(), 'asset'));
         fs.writeFileSync(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify({ test: 'test' }));
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('asset.json', true);
-        const returnData = jobFileFunctions.jobFileHandler();
+        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        const returnData = jobFileFunctions.jobFileHandler('asset.json', true   );
         expect(returnData[0]).toBe(path.join(process.cwd(), 'asset/asset.json'));
         expect(returnData[1].test).toBe('test');
     })
 
     it('bad file path throws an error', () => {
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')('jobTest.json');
-        expect(jobFileFunctions.jobFileHandler).toThrow('Sorry, can\'t find the JSON file: jobTest.json');
+        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        expect(() => {jobFileFunctions.jobFileHandler('jobTest.json')}).toThrow('Sorry, can\'t find the JSON file: jobTest.json');
     })
 
-    // empty json file
-    // returned contents match expected
-    // metaDataCheck
+    it('empty json file throws an error', () => {
+        fs.writeFileSync(path.join(process.cwd(), 'testFile.json'), JSON.stringify({ }));
+        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        expect(() => {jobFileFunctions.jobFileHandler('testFile.json')}).toThrow('JSON file contents cannot be empty');
+        fs.unlinkSync(path.join(process.cwd(), 'testFile.json'));
+    })
+
+    it('response if metadata is not in file, but needs to be', () => {
+        const jsonFileData = {
+            name: 'this is a name',
+            version: '0.0.1',
+            tjm: {}
+        }
+
+        // test metadata for asset
+        jsonFileData.tjm = {
+            clusters: ['http://localhost', 'http://cluster2']
+        }
+        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        let metaDataCheckResponse = jobFileFunctions.metaDataCheck(jsonFileData);
+        expect(metaDataCheckResponse).toBe(true);
+        delete jsonFileData.tjm
+        // test metadata for job
+        jsonFileData.tjm = {
+            cluster: 'http://localhost'
+        }
+        metaDataCheckResponse = jobFileFunctions.metaDataCheck(jsonFileData);
+        expect(metaDataCheckResponse).toBe(true);
+
+        // test no metadata
+        delete jsonFileData.tjm
+        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        expect(jobFileFunctions.metaDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
+    })
 });

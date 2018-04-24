@@ -4,8 +4,8 @@ const _ = require('lodash');
 const path = require('path');
 const reply = require('./reply')();
 
-module.exports = (fileName, asset) => {
-    function jobFileHandler() {
+module.exports = () => {
+    function jobFileHandler(fileName, asset) {
         let fName = fileName;
 
         if (!fName) {
@@ -35,10 +35,11 @@ module.exports = (fileName, asset) => {
         return [jobFilePath, jobContents];
     }
 
-    function metaDataCheck(fileJson) {
-        if (!_.has(fileJson, 'tjm')) {
+    function metaDataCheck(jsonData) {
+        if (!(_.has(jsonData, 'tjm.clusters') || _.has(jsonData, 'tjm.cluster'))) {
             reply.error('No teraslice job manager metadata, register the job or deploy the assets');
         }
+        return true;
     }
 
     return {

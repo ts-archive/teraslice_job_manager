@@ -18,8 +18,8 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv) => {
     const reply = require('./cmd_functions/reply')();
-    const jsonData = require('./cmd_functions/json_data_functions')('asset.json', true);
-    const fileData = jsonData.jobFileHandler();
+    const jsonData = require('./cmd_functions/json_data_functions')();
+    const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
     const tjmFunctions = require('./cmd_functions/functions')(argv);
