@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs-extra');
+const path = require('path');
 
 
 const assetJson = {
@@ -24,15 +25,22 @@ function createNewAssetDir(asset, pack) {
     fs.writeJsonSync(packagePath, packageJson, {spaces: 4});
 }
 
+const _tjmFunctions = {
+    loadAsset: () => {
+        return Promise.resolve(true);
+    }
+}
+
 describe('asset command testing', () => {
     let argv = {};
 
-    it('deploy should clear builds, zip, and deploy', () => {
+    fit('deploy should clear builds, zip, and deploy', () => {
         // create assets.json and package.json
-
+        createNewAssetDir();
         argv.c = 'localhost';
         argv.cmd = 'deploy';    
-        const handler = require('../cmds/asset').handler();
+        const handler = require('../cmds/asset').handler(argv, _tjmFunctions);
+        console.log(handler);
 
     })
 });

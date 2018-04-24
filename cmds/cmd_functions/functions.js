@@ -28,7 +28,7 @@ module.exports = (argv, clusterName) => {
         return Promise.resolve(false);
     }
 
-    function _addAsset() {
+    function _postAsset() {
         const zipFileName = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
         return teraslice.assets.post(zipFileName)
             .then((assetPostResponse) => {
@@ -42,7 +42,7 @@ module.exports = (argv, clusterName) => {
                     .then(() => _updateAssetMetadata())
                     .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
                     .then(() => _zipAsset())
-                    .then(() => _addAsset())
+                    .then(() => _postAsset())
                     .catch((err) => {
                         reply.error(err);
                     });
@@ -98,14 +98,14 @@ module.exports = (argv, clusterName) => {
         }
 
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, argv.c) >= 0) {
-                reply.error(`Assets have already been deployed to ${argv.c}, use update`);
-
+            if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(argv.c)) >= 0) {
+                console.log('I need to throw an error');
+                throw new Error(`Assets have already been deployed to ${argv.c}, use update`);
             }
                 assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
                 return assetJson;
         } else {
-            (_.set(assetJson, 'tjm.clusters', [ httpClusterNameCheck(argv.c) ]));
+            (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
             return assetJson
         }
     }
@@ -118,7 +118,7 @@ module.exports = (argv, clusterName) => {
         return { 
             _updateAssetMetadata,
             _zipAsset,
-            _addAsset
+            _postAsset
         }
     }
 

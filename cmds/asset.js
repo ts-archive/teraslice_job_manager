@@ -16,24 +16,20 @@ exports.builder = (yargs) => {
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
-exports.handler = (argv) => {
+exports.handler = (argv, testFunction) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
+
     const tjmFunctions = require('./cmd_functions/functions')(argv);
     const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
     if (argv.cmd === 'deploy') {
-        // add cluster to json file first
-        console.log(argv);
-        /*
-        Promise.resolve()
-            .then(() => tjmFunctions.updateAssetsMetadata())
-            .then(() => tjmFunctions.loadAssets())
+        return Promise.resolve()
+            .then(() => tjmFunctions.loadAsset())
             .catch(err => reply.error(err.message));
-            */
 
     } else if (argv.cmd === 'update') {
         if (clusters.length === 0) {

@@ -166,7 +166,7 @@ describe('tjmFunctions testing', () => {
 
         fs.writeFileSync(path.join(process.cwd(), 'builds/processors.zip'), 'this is some sweet text');
         tjmFunctions.__testContext(_teraslice);
-        return tjmFunctions.__testFunctions()._addAsset()
+        return tjmFunctions.__testFunctions()._postAsset()
             .then((response) => {
                 const parsedResponse = JSON.parse(response);
                 expect(parsedResponse.success).toBe('Asset was deployed');
