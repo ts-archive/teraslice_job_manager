@@ -2,6 +2,7 @@
 
 const fs = require('fs-extra');
 const path = require('path');
+const chalk = require('chalk');
 
 describe('tests jsonDataFunctions', () => {
     it('job files do not have to end in json', () => {
@@ -18,27 +19,27 @@ describe('tests jsonDataFunctions', () => {
 
     it('no job file throws error', () => {
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(jobFileFunctions.jobFileHandler).toThrow('Missing the job file!');
+        expect(jobFileFunctions.jobFileHandler).toThrow(chalk.red('Missing the job file!'));
     })
 
     it('path should change to asset/jsonFile if true as second function input', () => {
         fs.emptyDirSync(path.join(process.cwd(), 'asset'));
-        fs.writeFileSync(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify({ test: 'test' }));
+        fs.writeFileSync(path.join(process.cwd(), 'asset/assetTest.json'), JSON.stringify({ test: 'test' }));
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        const returnData = jobFileFunctions.jobFileHandler('asset.json', true   );
-        expect(returnData[0]).toBe(path.join(process.cwd(), 'asset/asset.json'));
+        const returnData = jobFileFunctions.jobFileHandler('assetTest.json', true);
+        expect(returnData[0]).toBe(path.join(process.cwd(), 'asset/assetTest.json'));
         expect(returnData[1].test).toBe('test');
     })
 
     it('bad file path throws an error', () => {
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(() => {jobFileFunctions.jobFileHandler('jobTest.json')}).toThrow('Sorry, can\'t find the JSON file: jobTest.json');
+        expect(() => {jobFileFunctions.jobFileHandler('jobTest.json')}).toThrow(chalk.red('Sorry, can\'t find the JSON file: jobTest.json'));
     })
 
     it('empty json file throws an error', () => {
         fs.writeFileSync(path.join(process.cwd(), 'testFile.json'), JSON.stringify({ }));
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(() => {jobFileFunctions.jobFileHandler('testFile.json')}).toThrow('JSON file contents cannot be empty');
+        expect(() => {jobFileFunctions.jobFileHandler('testFile.json')}).toThrow(chalk.red('JSON file contents cannot be empty'));
         fs.unlinkSync(path.join(process.cwd(), 'testFile.json'));
     })
 
@@ -67,6 +68,6 @@ describe('tests jsonDataFunctions', () => {
         // test no metadata
         delete jsonFileData.tjm
         jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(jobFileFunctions.metaDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
+        expect(jobFileFunctions.metaDataCheck).toThrow(chalk.red('No teraslice job manager metadata, register the job or deploy the assets'));
     })
 });

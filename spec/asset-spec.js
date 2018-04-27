@@ -34,13 +34,13 @@ const _tjmFunctions = {
 describe('asset command testing', () => {
     let argv = {};
 
-    fit('deploy should clear builds, zip, and deploy', () => {
+    xit('deploy should clear builds, zip, and deploy', () => {
         // create assets.json and package.json
         createNewAssetDir();
         argv.c = 'localhost';
         argv.cmd = 'deploy';    
         const handler = require('../cmds/asset').handler(argv, _tjmFunctions);
-        console.log(handler);
+        // console.log(handler);
 
     })
 });

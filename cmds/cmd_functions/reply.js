@@ -3,8 +3,8 @@
 const chalk = require('chalk');
 
 module.exports = () => {
-    function error(message) {
-        throw Error(message);
+    function error(err) {
+        throw (chalk.red(err));
     }
 
     function success(message) {

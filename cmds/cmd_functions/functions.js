@@ -29,8 +29,9 @@ module.exports = (argv, clusterName) => {
     }
 
     function _postAsset() {
-        const zipFileName = fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip'));
-        return teraslice.assets.post(zipFileName)
+        return Promise.resolve()
+            .then(() => fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip')))
+            .then((zipFileName) => teraslice.assets.post(zipFileName))
             .then((assetPostResponse) => {
                 return assetPostResponse;
             });
@@ -41,10 +42,17 @@ module.exports = (argv, clusterName) => {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
                     .then(() => _updateAssetMetadata())
                     .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
-                    .then(() => _zipAsset())
+                    .then(() => zipAsset())
+                    .then(zipData => {
+                        reply.success(zipData.bytes);
+                        reply.success(zipData.success);
+                    })
                     .then(() => _postAsset())
-                    .catch((err) => {
-                        reply.error(err);
+                    .then(postResponse => {
+                        const pResponse = JSON.parse(postResponse);
+                        if (pResponse._id) {
+                            reply.success(`Asset posted to ${argv.c} with id ${pResponse._id}`);
+                        }
                     });
         }
         return Promise.resolve(true);
@@ -61,7 +69,7 @@ module.exports = (argv, clusterName) => {
         return clusterCheck;
     }
 
-    function _zipAsset() {
+    function zipAsset() {
         const zipMessage = {};
 
         return new Promise((resolve, reject) => {
@@ -94,13 +102,12 @@ module.exports = (argv, clusterName) => {
         try {
             assetJson = require(path.join(process.cwd(),'asset', 'asset.json'));
         } catch(err) {
-            reply.error(`Could not load asset.json: ${err.message}`);
+            throw Error(`Could not load asset.json: ${err.message}`);
         }
 
         if (_.has(assetJson, 'tjm.clusters')) {
             if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(argv.c)) >= 0) {
-                console.log('I need to throw an error');
-                throw new Error(`Assets have already been deployed to ${argv.c}, use update`);
+                throw Error(`Assets have already been deployed to ${argv.c}, use update`);
             }
                 assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
                 return assetJson;
@@ -117,7 +124,6 @@ module.exports = (argv, clusterName) => {
     function __testFunctions() {
         return { 
             _updateAssetMetadata,
-            _zipAsset,
             _postAsset
         }
     }
@@ -130,6 +136,6 @@ module.exports = (argv, clusterName) => {
         teraslice,
         __testContext,
         __testFunctions,
-        _updateAssetMetadata
+        zipAsset,
     };
 };
