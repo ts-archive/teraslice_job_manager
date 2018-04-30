@@ -69,25 +69,26 @@ exports.handler = (argv, testFunction) => {
             const teraslice = require('teraslice-client-js')({
                 host: `${tjmFunctions.httpClusterNameCheck(cluster)}:5678`
             });
-    
             teraslice.cluster.txt(`assets/${assetName}`)
                 .then((clientResponse) => {
                     const byLine = clientResponse.split('\n');                
                     const trimTop = byLine.slice(2);
                     trimTop.pop();
-                    console.log(trimTop);
-                    if(trimTop[0].length === 1) {
-                        throw Error('\nTeraslice Client didn\'t return any data');
-                    }
                     const latest = trimTop.map(item => item.split(' ')
                         .filter(i => i !== ''))
                         .reduce((high, item) => {
                             return parseInt(item[1].split('.').join(''), 10) > high ? item : high;
                         }, 0);
-    
                     reply.success(`Cluster: ${cluster}, Name: ${latest[0]}, Version: ${latest[1]}`);
                 })
-                .catch(err => reply.error(err.message));
+                .catch((err) => {
+                    if (err.message === 'Cannot read property \'split\' of undefined') {
+                        reply.error(`Asset, ${assetName}, is not on the cluster or asset name is malformated`);
+                    } else if (err.name === 'RequestError') {
+                        reply.error(`Cannot connect to cluster: ${cluster}`);
+                    }
+                    reply.error(err.message);
+                });
         }
 
         if (clusters.length === 0) {

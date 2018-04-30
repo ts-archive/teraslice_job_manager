@@ -4,7 +4,7 @@ const chalk = require('chalk');
 
 module.exports = () => {
     function error(err) {
-        throw (chalk.red(err));
+        throw chalk.red(err);
     }
 
     function success(message) {
