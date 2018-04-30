@@ -31,7 +31,12 @@ exports.handler = (argv, testFunction) => {
     if (argv.cmd === 'deploy') {
         return Promise.resolve()
             .then(() => tjmFunctions.loadAsset())
-            .catch(err => reply.error(err.message));
+            .catch(err => {
+                if(err.name === 'RequestError') {
+                    reply.error(`Could not connect to cluster ${argv.c}`);
+                }
+                reply.error(err.message)
+            });
 
     } else if (argv.cmd === 'update') {
         if (clusters.length === 0) {

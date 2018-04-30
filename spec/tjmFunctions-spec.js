@@ -123,7 +123,7 @@ describe('tjmFunctions testing', () => {
             .then(() => {
                 _.set(assetJson, 'tjm.clusters');
                 assetJson.tjm.clusters =  [ 'http://localhost' ];
-                return fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson))
+                return fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson, null, 4))
             })
             .then(() => {
                 argv.c = 'http://newCluster';
@@ -156,7 +156,7 @@ describe('tjmFunctions testing', () => {
             .then(() => {
                 _.set(assetJson, 'tjm.clusters');
                 assetJson.tjm.clusters = ['http://localhost', 'http://newCluster', 'http://anotherCluster'];
-                return fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson));
+                return fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson, null, 4));
             })
             .then(() => {
                 argv.c = 'http://localhost';
@@ -173,7 +173,7 @@ describe('tjmFunctions testing', () => {
                 _.set(assetJson, 'tjm.clusters');
                 assetJson.tjm.clusters = ['http://localhost', 'http://newCluster', 'http://anotherCluster'];
                 return Promise.all([
-                    fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson)),
+                    fs.writeFile(path.join(process.cwd(), 'asset/asset.json'), JSON.stringify(assetJson, null, 4)),
                     fs.emptyDirSync(path.join(process.cwd(), 'builds'))
                 ])
             })

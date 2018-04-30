@@ -40,8 +40,6 @@ module.exports = (argv, clusterName) => {
     function loadAsset() {
         if (argv.a === true) {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
-                    .then(() => _updateAssetMetadata())
-                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
                     .then(() => zipAsset())
                     .then(zipData => {
                         reply.success(zipData.bytes);
@@ -53,7 +51,9 @@ module.exports = (argv, clusterName) => {
                         if (pResponse._id) {
                             reply.success(`Asset posted to ${argv.c} with id ${pResponse._id}`);
                         }
-                    });
+                    })
+                    .then(() => _updateAssetMetadata())
+                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson));
         }
         return Promise.resolve(true);
     }
