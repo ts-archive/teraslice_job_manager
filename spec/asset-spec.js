@@ -5,7 +5,7 @@ const path = require('path');
 
 
 const assetJson = {
-    name: 'testing 123',
+    name: 'testing_123',
     version: '0.0.01',
     description: 'dummy asset.json for testing'
 }
@@ -34,12 +34,12 @@ const _tjmFunctions = {
 describe('asset command testing', () => {
     let argv = {};
 
-    xit('deploy should clear builds, zip, and deploy', () => {
+    fit('deploy should clear builds, zip, and deploy', () => {
         // create assets.json and package.json
         createNewAssetDir();
         argv.c = 'localhost';
         argv.cmd = 'deploy';    
-        const handler = require('../cmds/asset').handler(argv, _tjmFunctions);
+        const handler = require('../cmds/asset').handler(argv);
         // console.log(handler);
 
     })

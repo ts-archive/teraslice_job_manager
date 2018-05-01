@@ -18,14 +18,14 @@ exports.builder = (yargs) => {
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
-exports.handler = (argv, testFunction) => {
+exports.handler = (argv) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
 
-    const tjmFunctions = require('./cmd_functions/functions')(argv);
+    let tjmFunctions = require('./cmd_functions/functions')(argv);
     const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
     if (argv.cmd === 'deploy') {
@@ -101,5 +101,9 @@ exports.handler = (argv, testFunction) => {
         }
         const assetName = assetJson.name;
         clusters.forEach(cluster => latestAssetVersion(cluster, assetName));
+    }
+
+    function __testContents(_tjmFunctions) {
+        tjmFunctions = _tjmFunctions;
     }
 };
