@@ -12,11 +12,19 @@ exports.command = 'asset <cmd>';
 exports.desc = 'Deploys, updates or checks the status of an asset.  Options are deploy, update, status.  Assumes assets are in ./asset.  Adds metadata to asset.json once deployed.\n';
 exports.builder = (yargs) => {
     yargs
-        .option('c', { describe: 'cluster where assets will be deployed, updated or checked',
-            default: 'localhost' })
-        .option('a', { describe: 'create and deply assets, on by default',
-            default: true,
-            type: 'boolean' })
+        .option('c', 
+            { 
+                describe: 'cluster where assets will be deployed, updated or checked',
+                default: 'localhost' 
+            }
+        )
+        .option('a', 
+            { 
+                describe: 'create and deply assets, on by default',
+                default: true,
+                type: 'boolean'
+            }
+        )
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };

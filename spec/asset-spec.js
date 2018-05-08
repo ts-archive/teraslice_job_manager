@@ -34,7 +34,7 @@ const _tjmFunctions = {
 describe('asset command testing', () => {
     let argv = {};
 
-    fit('deploy should clear builds, zip, and deploy', () => {
+    xit('deploy should clear builds, zip, and deploy', () => {
         // create assets.json and package.json
         createNewAssetDir();
         argv.c = 'localhost';

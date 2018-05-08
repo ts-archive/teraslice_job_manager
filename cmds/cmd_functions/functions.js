@@ -41,7 +41,8 @@ module.exports = (argv, clusterName) => {
 
     function loadAsset() {
         if (argv.a === true) {
-                return fs.emptyDir(path.join(process.cwd(), 'builds'))
+                return Promise.resolve()
+                    .then(() => fs.emptyDir(path.join(process.cwd(), 'builds')))
                     .then(() => zipAsset())
                     .then((zipData) => {
                         reply.success(zipData.bytes);
@@ -57,6 +58,7 @@ module.exports = (argv, clusterName) => {
                     })
                     .then(() => _updateAssetMetadata())
                     .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
+                    .then(() => reply.success('TJM data added to asset.json'))
                     .catch(err => console.log(err));
         }
         return Promise.resolve(true);
