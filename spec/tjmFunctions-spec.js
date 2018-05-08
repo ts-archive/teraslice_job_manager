@@ -33,7 +33,7 @@ const _teraslice = {
 };
 
 let assetJson = {
-    name: 'testing 123',
+    name: 'testing_123',
     version: '0.0.01',
     description: 'dummy asset.json for testing'
 }

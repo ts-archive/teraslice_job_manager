@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const Promise = require('bluebird');
 const readFile = Promise.promisify(require('fs').readFile);
+const reply = require('./cmd_functions/reply')();
+
 
 exports.command = 'asset <cmd>';
 exports.desc = 'Deploys, updates or checks the status of an asset.  Options are deploy, update, status.  Assumes assets are in ./asset.  Adds metadata to asset.json once deployed.\n';
@@ -19,13 +21,11 @@ exports.builder = (yargs) => {
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv) => {
-    const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
-
-    let tjmFunctions = require('./cmd_functions/functions')(argv);
+    const tjmFunctions = require('./cmd_functions/functions')(argv);
     const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
     if (argv.cmd === 'deploy') {
@@ -60,12 +60,16 @@ exports.handler = (argv) => {
                 return clusters.forEach((cluster) => {
                     postAssets(cluster)
                         .then((postResponse) => {
-                            const pResponse = JSON.parse(postResponse);
-                            if (pResponse._id) {
-                                reply.success(`Asset posted to ${argv.c} with id ${pResponse._id}`);
+                            const postResponseJson = JSON.parse(postResponse);
+                            if (postResponseJson.error) {
+                                console.log(`cluster: ${cluster} - ${postResponseJson.error}`);
+                            } else {
+                                reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
                             }
                         })
-                        .catch(err => reply.error(err.message));
+                        .catch(err => {
+                            reply.error(err.message)
+                        });
                 });
             })
             .catch(err => reply.error((err.message)));
@@ -101,9 +105,5 @@ exports.handler = (argv) => {
         }
         const assetName = assetJson.name;
         clusters.forEach(cluster => latestAssetVersion(cluster, assetName));
-    }
-
-    function __testContents(_tjmFunctions) {
-        tjmFunctions = _tjmFunctions;
     }
 };

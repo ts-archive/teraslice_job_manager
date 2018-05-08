@@ -30,8 +30,10 @@ module.exports = (argv, clusterName) => {
 
     function _postAsset() {
         return Promise.resolve()
-            .then(() => fs.readFileSync(path.join(process.cwd(), 'builds', 'processors.zip')))
-            .then((zipFileName) => teraslice.assets.post(zipFileName))
+            .then(() => fs.readFile(path.join(process.cwd(), 'builds', 'processors.zip')))
+            .then((zipFile) => {
+                return teraslice.assets.post(zipFile)
+            })
             .then((assetPostResponse) => {
                 return assetPostResponse;
             });
@@ -41,19 +43,21 @@ module.exports = (argv, clusterName) => {
         if (argv.a === true) {
                 return fs.emptyDir(path.join(process.cwd(), 'builds'))
                     .then(() => zipAsset())
-                    .then(zipData => {
+                    .then((zipData) => {
                         reply.success(zipData.bytes);
                         reply.success(zipData.success);
                     })
                     .then(() => _postAsset())
-                    .then(postResponse => {
-                        const pResponse = JSON.parse(postResponse);
-                        if (pResponse._id) {
-                            reply.success(`Asset posted to ${argv.c} with id ${pResponse._id}`);
+                    .then((postResponse) => {
+                        const postResponseJson = JSON.parse(postResponse);
+                        if (postResponseJson.error) {
+                            reply.error(postResponseJson.error);
                         }
+                        reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
                     })
                     .then(() => _updateAssetMetadata())
-                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson));
+                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
+                    .catch(err => console.log(err));
         }
         return Promise.resolve(true);
     }

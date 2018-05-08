@@ -39,7 +39,7 @@ describe('asset command testing', () => {
         createNewAssetDir();
         argv.c = 'localhost';
         argv.cmd = 'deploy';    
-        const handler = require('../cmds/asset').handler(argv);
+        const handler = require('../cmds/asset').handler;
         // console.log(handler);
 
     })
