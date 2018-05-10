@@ -56,8 +56,10 @@ module.exports = (argv, clusterName) => {
                         }
                         reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
                     })
-                    .then(() => _updateAssetMetadata())
-                    .then(assetJson => createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson))
+                    .then(() => {
+                        const assetJson = _updateAssetMetadata();
+                        return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)
+                    })
                     .then(() => reply.success('TJM data added to asset.json'))
                     .catch(err => console.log(err));
         }

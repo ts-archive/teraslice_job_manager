@@ -12,7 +12,7 @@ exports.builder = (yargs) => {
         .option('a', { describe: 'builds the assets and deploys to cluster, optional',
             default: false,
             type: 'boolean' })
-        .example('tjm register jobfile.prod -c ts_gen1.tera1.terascope.io -a');
+        .example('tjm register jobfile.prod -c clusterDomain -a');
 };
 exports.handler = (argv) => {
     const reply = require('./cmd_functions/reply')();
