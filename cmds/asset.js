@@ -15,7 +15,7 @@ exports.builder = (yargs) => {
         .option('c', 
             { 
                 describe: 'cluster where assets will be deployed, updated or checked',
-                default: 'localhost:5678' 
+                default: 'placeholder:5678' 
             }
         )
         .option('a', 
@@ -25,6 +25,11 @@ exports.builder = (yargs) => {
                 type: 'boolean'
             }
         )
+        .option('l', {
+            describe: 'for testing, specifies localhost',
+            default: false,
+            type: 'boolean'
+        })
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
@@ -40,8 +45,6 @@ exports.handler = (argv, testTjmFunctions) => {
     } else {
         tjmFunctions = require('./cmd_functions/functions')(argv);
     }
-    
-    const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
     if (argv.cmd === 'deploy') {
         return Promise.resolve()
@@ -53,12 +56,18 @@ exports.handler = (argv, testTjmFunctions) => {
                 reply.error(err.message)
             });
     } else if (argv.cmd === 'update') {
-        if (clusters.length === 0 || !argv.c) {
-            reply.error('Cluster data is missing from asset.json or not specified.\nTry deploy or specify a cluster with -c');
+
+        let clusters;
+        if (argv.l) {
+            clusters = [ 'localhost:5678' ];
+        } else if (argv.c && argv.c !== 'placeholder:5678') {
+            clusters = [ argv.c ];
+        } else {
+            clusters = _.has('assetJson', 'tjm.clusters') ? assetJson.tjm.clusters : [];
         }
 
-        if (arg.c) {
-            clusters = [ argv.c ];
+        if (clusters.length === 0 || clusters === undefined) {
+            reply.error('Cluster data is missing from asset.json or not specified.\nTry \'deploy\' or specify a cluster with -c');
         }
 
         Promise.resolve()
@@ -95,7 +104,7 @@ exports.handler = (argv, testTjmFunctions) => {
     } else if (argv.cmd === 'status') {
         function latestAssetVersion(cluster, assetName) {
             const teraslice = require('teraslice-client-js')({
-                host: `${tjmFunctions.httpClusterNameCheck(cluster)}:5678`
+                host: `${tjmFunctions.httpClusterNameCheck(cluster)}`
             });
             teraslice.cluster.txt(`assets/${assetName}`)
                 .then((clientResponse) => {

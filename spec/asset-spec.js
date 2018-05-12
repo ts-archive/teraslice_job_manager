@@ -58,7 +58,7 @@ describe('asset command testing', () => {
 
         return Promise.resolve()
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
-            .catch(err => expect(err).toBe(chalk.red('Cluster data is missing from asset.json or not specified.\nTry deploy or specify a cluster with -c')));
+            .catch(err => expect(err).toBe(chalk.red('Cluster data is missing from asset.json or not specified.\nTry \'deploy\' or specify a cluster with -c')));
     })
 
     it('asset should deploy to cluster if -c specified', () => {
