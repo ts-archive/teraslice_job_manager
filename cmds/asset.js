@@ -15,7 +15,7 @@ exports.builder = (yargs) => {
         .option('c', 
             { 
                 describe: 'cluster where assets will be deployed, updated or checked',
-                default: 'localhost' 
+                default: 'localhost:5678' 
             }
         )
         .option('a', 
@@ -28,12 +28,19 @@ exports.builder = (yargs) => {
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
-exports.handler = (argv) => {
+exports.handler = (argv, testTjmFunctions) => {
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
-    const tjmFunctions = require('./cmd_functions/functions')(argv);
+    let tjmFunctions;
+
+    if (testTjmFunctions) {
+        tjmFunctions = testTjmFunctions;
+    } else {
+        tjmFunctions = require('./cmd_functions/functions')(argv);
+    }
+    
     const clusters = _.has(assetJson, 'tjm.clusters') ? assetJson.tjm.clusters : [];
 
     if (argv.cmd === 'deploy') {
@@ -41,15 +48,19 @@ exports.handler = (argv) => {
             .then(() => tjmFunctions.loadAsset())
             .catch(err => {
                 if(err.name === 'RequestError') {
-                    reply.error(`Could not connect to cluster ${argv.c}`);
+                    reply.error(`Could not connect to ${argv.c}`);
                 }
                 reply.error(err.message)
             });
-
     } else if (argv.cmd === 'update') {
-        if (clusters.length === 0) {
-            reply.error('Clusters data is missing from asset.json.  Use \'tjm asset deploy\' first');
+        if (clusters.length === 0 || !argv.c) {
+            reply.error('Cluster data is missing from asset.json or not specified.\nTry deploy or specify a cluster with -c');
         }
+
+        if (arg.c) {
+            clusters = [ argv.c ];
+        }
+
         Promise.resolve()
             .then(() => fs.emptyDir(path.join(process.cwd(), 'builds')))
             .then(() => tjmFunctions.zipAsset())
@@ -61,7 +72,7 @@ exports.handler = (argv) => {
             .then((zippedFileData) => {
                 function postAssets(cName) {
                     const teraslice = require('teraslice-client-js')({
-                        host: `${tjmFunctions.httpClusterNameCheck(cName)}:5678`
+                        host: `${tjmFunctions.httpClusterNameCheck(cName)}`
                     });
                     return teraslice.assets.post(zippedFileData);
                 }

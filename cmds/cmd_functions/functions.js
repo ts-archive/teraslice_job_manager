@@ -12,7 +12,7 @@ module.exports = (argv, clusterName) => {
     const cluster = clusterName || argv.c;
 
     let teraslice = require('teraslice-client-js')({
-        host: `${httpClusterNameCheck(cluster)}:5678`
+        host: `${httpClusterNameCheck(cluster)}`
     });
 
     function alreadyRegisteredCheck(jobContents) {
@@ -61,6 +61,7 @@ module.exports = (argv, clusterName) => {
                         return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)
                     })
                     .then(() => reply.success('TJM data added to asset.json'))
+                    .then(() => reply.success(`Asset has successfully been deployed to ${argv.c}`))
                     .catch(err => console.log(err));
         }
         return Promise.resolve(true);
@@ -70,11 +71,16 @@ module.exports = (argv, clusterName) => {
         return writeFile(filePath, JSON.stringify(jsonObject, null, 4));
     }
 
-    function httpClusterNameCheck(clusterCheck) {
-        if (clusterCheck.indexOf('http') !== 0) {
-            return `http://${clusterCheck}`;
+    function httpClusterNameCheck(url) {
+        // needs to have a port number
+        if (url.indexOf(':') < 0) {
+            reply.error('Cluster names need to include a port number')
         }
-        return clusterCheck;
+
+        if (url.indexOf('http') !== 0) {
+            return `http://${url}`;
+        }
+        return url;
     }
 
     function zipAsset() {
