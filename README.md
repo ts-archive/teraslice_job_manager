@@ -50,5 +50,5 @@ For all commands that accept -c, if -c is missing default is http://localhost
 - tjm workers add 10 jobFile.json
 - tjm workers remove 5 jobFile.json
 
-**RESET** - Removes tjm data from job file or asset file, just specify the relateive path
+**RESET** - Removes tjm data from job file or asset file, just specify the relative path
 - tjm reset asset/asset.json
