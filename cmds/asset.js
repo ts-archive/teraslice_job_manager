@@ -15,7 +15,7 @@ exports.builder = (yargs) => {
         .option('c', 
             { 
                 describe: 'cluster where assets will be deployed, updated or checked',
-                default: 'placeholder:5678' 
+                default: '' 
             }
         )
         .option('a', 
@@ -38,8 +38,23 @@ exports.handler = (argv, testTjmFunctions) => {
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
     const assetJsonPath = fileData[0];
-    let tjmFunctions;
 
+    if (argv.l){
+        argv.c = 'http://localhost:5678';
+    }
+
+    let clusters;
+    if (argv.c) {
+        clusters = [ argv.c ];
+    } else {
+        clusters = _.has('assetJson', 'tjm.clusters') ? assetJson.tjm.clusters : [];
+    }
+
+    if (clusters.length === 0 || clusters === undefined) {
+        reply.error('Cluster data is missing from asset.json or not specified using -c.');
+    }
+
+    let tjmFunctions;
     if (testTjmFunctions) {
         tjmFunctions = testTjmFunctions;
     } else {
@@ -56,20 +71,6 @@ exports.handler = (argv, testTjmFunctions) => {
                 reply.error(err.message)
             });
     } else if (argv.cmd === 'update') {
-
-        let clusters;
-        if (argv.l) {
-            clusters = [ 'localhost:5678' ];
-        } else if (argv.c && argv.c !== 'placeholder:5678') {
-            clusters = [ argv.c ];
-        } else {
-            clusters = _.has('assetJson', 'tjm.clusters') ? assetJson.tjm.clusters : [];
-        }
-
-        if (clusters.length === 0 || clusters === undefined) {
-            reply.error('Cluster data is missing from asset.json or not specified.\nTry \'deploy\' or specify a cluster with -c');
-        }
-
         Promise.resolve()
             .then(() => fs.emptyDir(path.join(process.cwd(), 'builds')))
             .then(() => tjmFunctions.zipAsset())
@@ -128,9 +129,6 @@ exports.handler = (argv, testTjmFunctions) => {
                 });
         }
 
-        if (clusters.length === 0) {
-            reply.error('Clusters data is missing from asset.json. Use \'tjm asset deploy\' first');
-        }
         const assetName = assetJson.name;
         clusters.forEach(cluster => latestAssetVersion(cluster, assetName));
     }

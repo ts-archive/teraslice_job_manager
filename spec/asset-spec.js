@@ -24,10 +24,11 @@ let error = new Error();
 describe('asset command testing', () => {
     let argv = {};
 
-    it('deploy trigger load asset', () => {
-        argv.c = 'localhost';
+    it('deploy triggers load asset', () => {
+        argv.c = 'localhost:5678';
         argv.cmd = 'deploy'; 
-        deploy = Promise.resolve('deployed');   
+        deploy = Promise.resolve('deployed');  
+ 
         Promise.resolve()
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
             .then((result) => {
@@ -36,8 +37,8 @@ describe('asset command testing', () => {
             .catch(fail);
     })
 
-    it('deploy should catch the error', () => {
-        argv.c = 'localhost';
+    it('deploy should respond to a request error', () => {
+        argv.c = 'localhost:5678';
         argv.cmd = 'deploy';
         error.name = 'RequestError';
         error.message = 'This is an error'
@@ -48,7 +49,7 @@ describe('asset command testing', () => {
         return Promise.resolve()
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
             .catch(err => {
-                expect(err).toBe(chalk.red('Could not connect to localhost'));
+                expect(err).toBe(chalk.red('Could not connect to localhost:5678'));
             });
     })
 
@@ -58,7 +59,7 @@ describe('asset command testing', () => {
 
         return Promise.resolve()
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
-            .catch(err => expect(err).toBe(chalk.red('Cluster data is missing from asset.json or not specified.\nTry \'deploy\' or specify a cluster with -c')));
+            .catch(err => expect(err).toBe(chalk.red('Cluster data is missing from asset.json or not specified using -c.')));
     })
 
     it('asset should deploy to cluster if -c specified', () => {

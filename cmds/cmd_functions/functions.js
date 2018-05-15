@@ -10,7 +10,7 @@ const writeFile = Promise.promisify(require('fs').writeFile);
 
 module.exports = (argv, clusterName) => {
     const cluster = clusterName || argv.c;
-
+    httpClusterNameCheck(cluster);
     let teraslice = require('teraslice-client-js')({
         host: `${httpClusterNameCheck(cluster)}`
     });
@@ -62,7 +62,7 @@ module.exports = (argv, clusterName) => {
                     })
                     .then(() => reply.success('TJM data added to asset.json'))
                     .then(() => reply.success(`Asset has successfully been deployed to ${argv.c}`))
-                    .catch(err => console.log(err));
+                    .catch(err => reply(err));
         }
         return Promise.resolve(true);
     }
@@ -73,7 +73,7 @@ module.exports = (argv, clusterName) => {
 
     function httpClusterNameCheck(url) {
         // needs to have a port number
-        if (url.indexOf(':') < 0) {
+        if (url.lastIndexOf(':') !== url.length - 5) {
             reply.error('Cluster names need to include a port number')
         }
 

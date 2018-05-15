@@ -78,6 +78,7 @@ describe('tjmFunctions testing', function() {
     it('check that cluster name includes a port', () => {
         expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
         expect(() => { tjmFunctions.httpClusterNameCheck('localhost')}).toThrow(chalk.red('Cluster names need to include a port number'));
+        expect(() => { tjmFunctions.httpClusterNameCheck('http://localhost')}).toThrow(chalk.red('Cluster names need to include a port number'));
     })
 
 
