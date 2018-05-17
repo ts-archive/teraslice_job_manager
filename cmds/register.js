@@ -8,7 +8,7 @@ exports.desc = 'Registers job with a cluster.  Specify the cluster with -c.\nAdd
 exports.builder = (yargs) => {
     yargs
         .option('c', { describe: 'cluster where the job will be registered',
-            default: 'localhost' })
+            default: 'localhost:5678' })
         .option('a', { describe: 'builds the assets and deploys to cluster, optional',
             default: false,
             type: 'boolean' })

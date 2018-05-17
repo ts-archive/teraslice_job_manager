@@ -4,15 +4,15 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const archiver = require('archiver');
 const Promise = require('bluebird');
-const reply = require('./reply')();
+let reply = require('./reply')();
 const path = require('path');
 const writeFile = Promise.promisify(require('fs').writeFile);
 
 module.exports = (argv, clusterName) => {
     const cluster = clusterName || argv.c;
-
+    httpClusterNameCheck(cluster);
     let teraslice = require('teraslice-client-js')({
-        host: `${httpClusterNameCheck(cluster)}:5678`
+        host: `${httpClusterNameCheck(cluster)}`
     });
 
     function alreadyRegisteredCheck(jobContents) {
@@ -31,12 +31,8 @@ module.exports = (argv, clusterName) => {
     function _postAsset() {
         return Promise.resolve()
             .then(() => fs.readFile(path.join(process.cwd(), 'builds', 'processors.zip')))
-            .then((zipFile) => {
-                return teraslice.assets.post(zipFile)
-            })
-            .then((assetPostResponse) => {
-                return assetPostResponse;
-            });
+            .then(zipFile => teraslice.assets.post(zipFile))
+            .then(assetPostResponse => assetPostResponse);
     }
 
     function loadAsset() {
@@ -61,7 +57,7 @@ module.exports = (argv, clusterName) => {
                         return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)
                     })
                     .then(() => reply.success('TJM data added to asset.json'))
-                    .catch(err => console.log(err));
+                    .then(() => reply.success(`Asset has successfully been deployed to ${argv.c}`))
         }
         return Promise.resolve(true);
     }
@@ -70,11 +66,16 @@ module.exports = (argv, clusterName) => {
         return writeFile(filePath, JSON.stringify(jsonObject, null, 4));
     }
 
-    function httpClusterNameCheck(clusterCheck) {
-        if (clusterCheck.indexOf('http') !== 0) {
-            return `http://${clusterCheck}`;
+    function httpClusterNameCheck(url) {
+        // needs to have a port number
+        if (url.lastIndexOf(':') !== url.length - 5) {
+            return reply.error('Cluster names need to include a port number');
         }
-        return clusterCheck;
+
+        if (url.indexOf('http') !== 0) {
+            return `http://${url}`;
+        }
+        return url;
     }
 
     function zipAsset() {
@@ -125,8 +126,9 @@ module.exports = (argv, clusterName) => {
         }
     }
 
-    function __testContext(_teraslice) {
-        teraslice = _teraslice
+    function __testContext(_teraslice, _reply) {
+        teraslice = _teraslice,
+        reply = _reply
     }
 
     function __testFunctions() {
