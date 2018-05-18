@@ -4,9 +4,8 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const archiver = require('archiver');
 const Promise = require('bluebird');
-let reply = require('./reply')();
+const reply = require('./reply')();
 const path = require('path');
-const writeFile = Promise.promisify(require('fs').writeFile);
 
 module.exports = (argv, clusterName) => {
     const cluster = clusterName || argv.c;
@@ -18,14 +17,14 @@ module.exports = (argv, clusterName) => {
     function alreadyRegisteredCheck(jobContents) {
         if (_.has(jobContents, 'tjm.cluster')) {
             return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
-                .then((jobSpec) => {    
+                .then((jobSpec) => {
                     if (jobSpec.job_id === jobContents.tjm.job_id) {
-                        return Promise.resolve(true);
+                        return Promise.resolve();
                     }
-                    return Promise.resolve(false);
+                    return Promise.reject(new Error('Job is not on the cluster'));
                 });
         }
-        return Promise.resolve(false);
+        return Promise.reject(new Error('No cluster configuration for this job'));
     }
 
     function _postAsset() {
@@ -37,39 +36,40 @@ module.exports = (argv, clusterName) => {
 
     function loadAsset() {
         if (argv.a === true) {
-                return Promise.resolve()
-                    .then(() => fs.emptyDir(path.join(process.cwd(), 'builds')))
-                    .then(() => zipAsset())
-                    .then((zipData) => {
-                        reply.success(zipData.bytes);
-                        reply.success(zipData.success);
-                    })
-                    .then(() => _postAsset())
-                    .then((postResponse) => {
-                        const postResponseJson = JSON.parse(postResponse);
-                        if (postResponseJson.error) {
-                            reply.error(postResponseJson.error);
-                        }
-                        reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
-                    })
-                    .then(() => {
-                        const assetJson = _updateAssetMetadata();
-                        return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson)
-                    })
-                    .then(() => reply.success('TJM data added to asset.json'))
-                    .then(() => reply.success(`Asset has successfully been deployed to ${argv.c}`))
+            return fs.emptyDir(path.join(process.cwd(), 'builds'))
+                .then(() => zipAsset())
+                .then((zipData) => {
+                    reply.success(zipData.bytes);
+                    reply.success(zipData.success);
+                })
+                .then(() => _postAsset())
+                .then((postResponse) => {
+                    const postResponseJson = JSON.parse(postResponse);
+                    if (postResponseJson.error) {
+                        return Promise.reject(new Error(postResponseJson.error));
+                    }
+                    reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
+                    return Promise.resolve();
+                })
+                .then(() => {
+                    const assetJson = _updateAssetMetadata();
+                    return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson);
+                })
+                .then(() => reply.success('TJM data added to asset.json'))
+                .then(() => reply.success(`Asset has successfully been deployed to ${argv.c}`))
+                .catch(err => reply(err));
         }
         return Promise.resolve(true);
     }
 
     function createJsonFile(filePath, jsonObject) {
-        return writeFile(filePath, JSON.stringify(jsonObject, null, 4));
+        return fs.writeJson(filePath, jsonObject, { spaces: 4 });
     }
 
     function httpClusterNameCheck(url) {
         // needs to have a port number
         if (url.lastIndexOf(':') !== url.length - 5) {
-            return reply.error('Cluster names need to include a port number');
+            reply.error('Cluster names need to include a port number');
         }
 
         if (url.indexOf('http') !== 0) {
@@ -107,10 +107,10 @@ module.exports = (argv, clusterName) => {
     function _updateAssetMetadata() {
         // writes asset metadata to asset.json
         let assetJson;
-        
+
         try {
-            assetJson = require(path.join(process.cwd(),'asset', 'asset.json'));
-        } catch(err) {
+            assetJson = require(path.join(process.cwd(), 'asset', 'asset.json'));
+        } catch (err) {
             throw Error(`Could not load asset.json: ${err.message}`);
         }
 
@@ -118,24 +118,22 @@ module.exports = (argv, clusterName) => {
             if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(argv.c)) >= 0) {
                 throw Error(`Assets have already been deployed to ${argv.c}, use update`);
             }
-                assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
-                return assetJson;
-        } else {
-            (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
-            return assetJson
+            assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
+            return assetJson;
         }
+        (_.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]));
+        return assetJson;
     }
 
-    function __testContext(_teraslice, _reply) {
-        teraslice = _teraslice,
-        reply = _reply
+    function __testContext(_teraslice) {
+        teraslice = _teraslice;
     }
 
     function __testFunctions() {
-        return { 
+        return {
             _updateAssetMetadata,
             _postAsset
-        }
+        };
     }
 
     return {

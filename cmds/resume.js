@@ -14,14 +14,7 @@ exports.handler = (argv) => {
     const jobId = jobContents.tjm.job_id;
     const cluster = jobContents.tjm.cluster;
 
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
-        .then((result) => {
-            if (result === false) {
-                reply.error('Job is not on the cluster');
-            }
-            return Promise.resolve(true);
-        })
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((status) => {
             if (status !== 'paused' && status !== 'stopped') {

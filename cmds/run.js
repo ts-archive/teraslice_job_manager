@@ -22,14 +22,14 @@ exports.handler = (argv) => {
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
-    Promise.resolve()
-        .then(() => Promise.all([tjmFunctions.alreadyRegisteredCheck(jobContents), tjmFunctions.loadAsset()]))
-        .spread((isAlreadyRegistered) => {
-            if (isAlreadyRegistered) {
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
+        .catch((err) => {
+            if (err) {
                 reply.warning(`Job ${jobContents.tjm.job_id} is already registered with cluster ${argv.c}`);
             }
             return tjmFunctions.teraslice.jobs.submit(jobContents)
         })
+        .then(() => tjmFunctions.loadAsset())
         .then((jobResult) => {
             const jobId = jobResult.id();
             reply.success(`Started job: ${jobId} on ${argv.c}`);

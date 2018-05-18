@@ -12,15 +12,8 @@ exports.handler = (argv) => {
     jsonData.metaDataCheck(jobContents);
     const tjmFunctions = require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
     const jobId = jobContents.tjm.job_id;
-
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
-        .then((result) => {
-            if (result === false) {
-                reply.error('Job is not on the cluster');
-            }
-            return Promise.resolve(true);
-        })
+    
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((status) => {
             reply.success(`Job status: ${status}`);

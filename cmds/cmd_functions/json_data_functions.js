@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const path = require('path');
-let reply = require('./reply')();
+const reply = require('./reply')();
 
 module.exports = () => {
     function jobFileHandler(fileName, asset) {
@@ -42,13 +42,19 @@ module.exports = () => {
         return true;
     }
 
-    function __testContext(_reply) {
-        reply = _reply
+    function getClusters(jsonData) {
+        if (_.has(jsonData, 'tjm.clusters')) {
+            return _.get(jsonData, 'tjm.clusters');
+        }
+        if (_.has(jsonData, 'tjm.clusters')) {
+            return _.castArray(_.get(jsonData, 'tjm.cluster'));
+        }
+        return [];
     }
 
     return {
         jobFileHandler,
         metaDataCheck,
-        __testContext
+        getClusters
     };
 };

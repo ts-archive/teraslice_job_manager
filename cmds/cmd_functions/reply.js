@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 'use strict';
 
 const chalk = require('chalk');
@@ -22,4 +24,3 @@ module.exports = () => {
         warning
     };
 };
-

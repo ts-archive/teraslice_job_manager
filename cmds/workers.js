@@ -14,14 +14,7 @@ exports.handler = (argv) => {
     jsonData.metaDataCheck(jobContents);
     const tjmFunctions = require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
     const jobId = jobContents.tjm.job_id;
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
-        .then((result) => {
-            if (result === false) {
-                reply.error(`Job is not on ${jobContents.tjm.cluster}`);
-            }
-            return Promise.resolve(true);
-        })
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => {
             if (argv.num <= 0 || isNaN(argv.num)) {
                 throw Error('Number of workers must be a number or greater than 0');

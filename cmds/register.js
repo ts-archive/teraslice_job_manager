@@ -22,8 +22,7 @@ exports.handler = (argv) => {
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then((result) => {
             if (result === true) {
                 return Promise.reject(Error(`Job ${jobContents.tjm.job_id} is already registered with cluster ${argv.c}`));
