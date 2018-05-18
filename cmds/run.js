@@ -39,5 +39,5 @@ exports.handler = (argv) => {
             return tjmFunctions.createJsonFile(jobFilePath, jobContents);
         })
         .then(() => reply.success('Updated job file with tjm data'))
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

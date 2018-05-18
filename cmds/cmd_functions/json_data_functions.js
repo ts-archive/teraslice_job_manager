@@ -9,7 +9,7 @@ module.exports = () => {
         let fName = fileName;
 
         if (!fName) {
-            return reply.error('Missing the job file!');
+            reply.fatal('Missing the job file!');
         }
 
         if (fName.lastIndexOf('.json') !== fName.length - 5) {
@@ -25,11 +25,11 @@ module.exports = () => {
         try {
             jobContents = require(jobFilePath);
         } catch (err) {
-            return reply.error(`Sorry, can't find the JSON file: ${fName}`);
+            reply.fatal(`Sorry, can't find the JSON file: ${fName}`);
         }
 
         if (_.isEmpty(jobContents)) {
-            return reply.error('JSON file contents cannot be empty');
+            reply.fatal('JSON file contents cannot be empty');
         }
 
         return [jobFilePath, jobContents];
@@ -37,7 +37,7 @@ module.exports = () => {
 
     function metaDataCheck(jsonData) {
         if (!(_.has(jsonData, 'tjm.clusters') || _.has(jsonData, 'tjm.cluster'))) {
-            return reply.error('No teraslice job manager metadata, register the job or deploy the assets');
+            reply.fatal('No teraslice job manager metadata, register the job or deploy the assets');
         }
         return true;
     }

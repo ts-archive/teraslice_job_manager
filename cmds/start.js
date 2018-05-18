@@ -19,17 +19,17 @@ exports.handler = (argv) => {
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((status) => {
             if (status === 'running' || status === 'paused') {
-                reply.error(`Job is already running on ${jobContents.tjm.cluster}, check job status`);
+                return Promise.reject(new Error(`Job is already running on ${jobContents.tjm.cluster}, check job status`));
             }
-            return Promise.resolve(true);
+            return Promise.resolve();
         })
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).start())
         .then((result) => {
             if (_.has(result, 'job_id')) {
                 reply.success(`Started job ${jobId}`);
             } else {
-                reply.error('Could not start job');
+                reply.fatal('Could not start job');
             }
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

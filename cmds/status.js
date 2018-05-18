@@ -18,5 +18,5 @@ exports.handler = (argv) => {
         .then((status) => {
             reply.success(`Job status: ${status}`);
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

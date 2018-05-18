@@ -46,5 +46,5 @@ exports.handler = (argv) => {
                 })
                 .then(() => reply.success(`restarted job ${jobId} on ${cluster}`));
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

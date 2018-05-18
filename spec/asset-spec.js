@@ -1,8 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-const Promise = require('bluebird');
-
 let deployMessage = 'default deployed message';
 let deployError = null;
 const _tjmFunctions = {
@@ -49,10 +46,9 @@ describe('asset command testing', () => {
         error.message = 'This is an error';
 
         deployError = error;
-        return Promise.resolve()
-            .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
+        return require('../cmds/asset').handler(argv, _tjmFunctions)
             .catch((err) => {
-                expect(err).toBe(chalk.red('Could not connect to localhost:5678'));
+                expect(err).toBe('Could not connect to localhost:5678');
             });
     });
 
@@ -62,6 +58,6 @@ describe('asset command testing', () => {
 
         return Promise.resolve()
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
-            .catch(err => expect(err).toBe(chalk.red('Cluster data is missing from asset.json or not specified using -c.')));
+            .catch(err => expect(err).toBe('Cluster data is missing from asset.json or not specified using -c.'));
     });
 });

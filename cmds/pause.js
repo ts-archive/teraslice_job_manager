@@ -18,7 +18,7 @@ exports.handler = (argv) => {
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((jobStatus) => {
             if (jobStatus !== 'running') {
-                reply.error(`Job ${jobId} is not running on ${cluster}.  Status is ${jobStatus}`);
+                reply.fatal(`Job ${jobId} is not running on ${cluster}.  Status is ${jobStatus}`);
             }
             return Promise.resolve(true);
         })
@@ -27,8 +27,8 @@ exports.handler = (argv) => {
             if (result.status.status === 'paused') {
                 reply.success(`Paused job ${jobId} on ${cluster}`);
             } else {
-                reply.error('Could not pause job');
+                reply.fatal('Could not pause job');
             }
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

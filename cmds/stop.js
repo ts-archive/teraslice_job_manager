@@ -22,5 +22,5 @@ exports.handler = (argv) => {
                 return Promise.reject(new Error('Job could not be stopped'));
             }
         })
-        .catch(err => reply.error(err));
+        .catch(err => reply.fatal(err));
 };

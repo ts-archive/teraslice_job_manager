@@ -25,5 +25,5 @@ exports.handler = (argv) => {
                 });
             }
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

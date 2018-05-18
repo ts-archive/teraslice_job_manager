@@ -16,7 +16,7 @@ exports.handler = (argv) => {
     const jobFilePath = jobData[0];
 
     delete jobContents.tjm;
-    fs.writeJson(jobFilePath, jobContents, { spaces: 4 })
+    return fs.writeJson(jobFilePath, jobContents, { spaces: 4 })
         .then(() => reply.success(`TJM data was removed from ${argv.jobFile}`))
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

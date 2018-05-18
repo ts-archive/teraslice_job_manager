@@ -51,16 +51,10 @@ exports.handler = (argv, testTjmFunctions) => {
         clusters = jsonData.getClusters(assetJson);
     }
     if (_.isEmpty(clusters)) {
-        reply.error('Cluster data is missing from asset.json or not specified using -c.');
+        reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
     }
 
-    let tjmFunctions;
-    if (testTjmFunctions) {
-        // mock function to use for testing
-        tjmFunctions = testTjmFunctions;
-    } else {
-        tjmFunctions = require('./cmd_functions/functions')(argv);
-    }
+    const tjmFunctions = testTjmFunctions || require('./cmd_functions/functions')(argv);
 
     function latestAssetVersion(cluster, assetName) {
         const teraslice = require('teraslice-client-js')({
@@ -78,11 +72,13 @@ exports.handler = (argv, testTjmFunctions) => {
             })
             .catch((err) => {
                 if (err.message === 'Cannot read property \'split\' of undefined') {
-                    reply.error(`Asset, ${assetName}, is not on the cluster or asset name is malformated`);
+                    reply.fatal(`Asset, ${assetName}, is not on the cluster or asset name is malformated`);
+                    return;
                 } else if (err.name === 'RequestError') {
-                    reply.error(`Cannot connect to cluster: ${cluster}`);
+                    reply.fatal(`Cannot connect to cluster: ${cluster}`);
+                    return;
                 }
-                reply.error(err);
+                reply.fatal(err);
             });
     }
 
@@ -90,9 +86,10 @@ exports.handler = (argv, testTjmFunctions) => {
         return tjmFunctions.loadAsset()
             .catch((err) => {
                 if (err.name === 'RequestError') {
-                    reply.error(`Could not connect to ${argv.c}`);
+                    reply.fatal(`Could not connect to ${argv.c}`);
+                    return;
                 }
-                reply.error(err);
+                reply.fatal(err);
             });
     } else if (argv.cmd === 'update') {
         return fs.emptyDir(path.join(process.cwd(), 'builds'))
@@ -120,11 +117,11 @@ exports.handler = (argv, testTjmFunctions) => {
                             }
                         })
                         .catch((err) => {
-                            reply.error(err);
+                            reply.fatal(err);
                         });
                 });
             })
-            .catch(err => reply.error((err.message)));
+            .catch(err => reply.fatal((err.message)));
     } else if (argv.cmd === 'status') {
         const assetName = assetJson.name;
         return Promise.each(cluster => latestAssetVersion(cluster, assetName));
