@@ -74,7 +74,7 @@ module.exports = (argv, clusterName) => {
 
     function httpClusterNameCheck(url) {
         if (!url) {
-            return;
+            return '';
         }
         // needs to have a port number
         if (url.lastIndexOf(':') !== url.length - 5) {

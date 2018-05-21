@@ -111,7 +111,7 @@ exports.handler = (argv, testTjmFunctions) => {
                         .then((postResponse) => {
                             const postResponseJson = JSON.parse(postResponse);
                             if (postResponseJson.error) {
-                                reply.warn(`Cluster: ${cluster} - ${postResponseJson.error}`);
+                                reply.fatal(postResponseJson.error);
                             } else {
                                 reply.success(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
                             }
