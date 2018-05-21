@@ -8,7 +8,14 @@ const reply = require('./reply')();
 const path = require('path');
 
 module.exports = (argv, clusterName) => {
-    const cluster = clusterName || argv.c;
+    let cluster;
+    if (clusterName) {
+        cluster = clusterName;
+    } else if (argv.c) {
+        cluster = argv.c;
+    } else if (argv.l) {
+        cluster = 'http://localhost:5678';
+    }
     httpClusterNameCheck(cluster);
     let teraslice = require('teraslice-client-js')({
         host: `${httpClusterNameCheck(cluster)}`
@@ -66,6 +73,9 @@ module.exports = (argv, clusterName) => {
     }
 
     function httpClusterNameCheck(url) {
+        if (!url) {
+            return;
+        }
         // needs to have a port number
         if (url.lastIndexOf(':') !== url.length - 5) {
             reply.fatal('Cluster names need to include a port number');
@@ -113,14 +123,15 @@ module.exports = (argv, clusterName) => {
             throw new Error(`Could not load asset.json: ${err.message}`);
         }
 
+        const c = argv.l ? 'http://localhost:5678' : argv.c;
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(argv.c)) >= 0) {
-                throw new Error(`Assets have already been deployed to ${argv.c}, use update`);
+            if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(c)) >= 0) {
+                throw new Error(`Assets have already been deployed to ${c}, use update`);
             }
-            assetJson.tjm.clusters.push(httpClusterNameCheck(argv.c));
+            assetJson.tjm.clusters.push(httpClusterNameCheck(c));
             return assetJson;
         }
-        _.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(argv.c)]);
+        _.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(c)]);
         return assetJson;
     }
 
