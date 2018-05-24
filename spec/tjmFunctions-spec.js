@@ -43,8 +43,7 @@ const packageJson = {
 function createNewAsset() {
     const assetPath = path.join(__dirname, '..', 'asset/asset.json');
     const packagePath = path.join(__dirname, '..', 'asset/package.json');
-    return Promise.resolve()
-        .then(() => fs.emptyDir(path.join(__dirname, '..', 'asset')))
+    return fs.emptyDir(path.join(__dirname, '..', 'asset'))
         .then(() => Promise.all([
             fs.writeJson(assetPath, {
                 name: 'testing_123',
@@ -110,7 +109,7 @@ describe('tjmFunctions testing', () => {
             });
     });
 
-    it('meta data is being written to assets.json ', (done) => {
+    it('meta data is being written to assets.json ', () => {
         argv.c = 'http://localhost:5678';
         const tjmFuncs = require('../cmds/cmd_functions/functions')(argv);
         return createNewAsset()
@@ -119,7 +118,6 @@ describe('tjmFunctions testing', () => {
                 expect(jsonResult.tjm).toBeDefined();
                 expect(jsonResult.tjm.clusters[0]).toBe('http://localhost:5678');
             })
-            .catch(fail);
     });
 
     it('cluster is added to array in asset.json if a new cluster', () => createNewAsset()
@@ -143,8 +141,7 @@ describe('tjmFunctions testing', () => {
             expect(jsonResult.tjm).toBeDefined();
             expect(jsonResult.tjm.clusters[0]).toBe('http://localhost:5678');
             expect(jsonResult.tjm.clusters[1]).toBe('http://newCluster:5678');
-        })
-        .catch(fail));
+        }));
 
     it('no asset.json throw error', () => {
         argv.c = 'http://localhost:5678';
@@ -153,7 +150,6 @@ describe('tjmFunctions testing', () => {
             .then(() => {
                 expect(tjmFunctions.__testFunctions()._updateAssetMetadata).toThrowError();
             })
-            .catch(fail);
     });
 
     it('if cluster already in metadata throw error', () => {
@@ -170,15 +166,8 @@ describe('tjmFunctions testing', () => {
 
         return fs.writeJson(path.join(__dirname, '..', 'asset/asset.json'), assetJson, { spaces: 4 })
             .then(() => expect(tjmFunctions.__testFunctions()._updateAssetMetadata).toThrowError('Assets have already been deployed to http://localhost:5678, use update'))
-            .catch(fail);
     });
 
-<<<<<<< HEAD
-    it('check that assets are zipped', (done) => {
-        _.set(assetJson, 'tjm.clusters');
-        assetJson.tjm.clusters = ['http://localhost:5678', 'http://newCluster:5678', 'http://anotherCluster:5678'];
-
-=======
     it('check that assets are zipped', () => {
         const assetJson = {
             name: 'testing_123',
@@ -188,19 +177,16 @@ describe('tjmFunctions testing', () => {
                 clusters: ['http://localhost:5678', 'http://newCluster:5678', 'http://anotherCluster:5678']
             }
         };
->>>>>>> Fixed tests and object mutation errors
-        return Promise.resolve()
-            .then(() => Promise.all([
+        return Promise.all([
                 fs.writeFile(path.join(__dirname, '..', 'asset/asset.json'), JSON.stringify(assetJson, null, 4)),
                 fs.emptyDir(path.join(__dirname, '..', 'builds'))
-            ]))
+            ])
             .then(() => tjmFunctions.zipAsset())
             .then(zipMessage => expect(zipMessage.success).toBe('Assets have been zipped to builds/processors.zip'))
             .then(() => fs.pathExists(path.join(__dirname, '..', 'builds/processors.zip')))
             .then((exists) => {
                 expect(exists).toBe(true);
             })
-            .catch(fail);
     });
 
     it('add assets returns post asset message', () => {
@@ -209,8 +195,7 @@ describe('tjmFunctions testing', () => {
             _id: '12345AssetId'
         });
 
-        return Promise.resolve()
-            .then(() => fs.emptyDir(path.join(__dirname, '..', 'builds')))
+        return fs.emptyDir(path.join(__dirname, '..', 'builds'))
             .then(() => fs.writeFile(path.join(__dirname, '..', 'builds/processors.zip'), 'this is some sweet text'))
             .then(() => {
                 tjmFunctions.__testContext(_teraslice);
@@ -221,7 +206,6 @@ describe('tjmFunctions testing', () => {
                 expect(parsedResponse.success).toBe('Asset was deployed');
                 expect(parsedResponse._id).toBe('12345AssetId');
             })
-            .catch(fail);
     });
 
     xit('load asset removes build, adds metadata to asset, zips asset, posts to cluster', () => {
@@ -231,14 +215,12 @@ describe('tjmFunctions testing', () => {
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
 
-        return Promise.resolve()
-            .then(() => tjmFunctions.loadAsset())
+        return tjmFunctions.loadAsset()
             .then(() => {
                 const updatedAssetJson = require(path.join(__dirname, '..', 'asset/asset.json'));
                 expect(updatedAssetJson.tjm.clusters[0]).toBe('http://localhost:5678');
                 expect(fs.pathExistsSync(path.join(__dirname, '..', 'builds/processors.zip'))).toBe(true);
                 expect(fs.pathExistsSync(path.join(__dirname, '..', 'asset/package.json'))).toBe(true);
             })
-            .catch(fail);
     });
 });

@@ -1,7 +1,20 @@
 'use strict';
 
+const fs = require('fs-extra');
+const asset = require('../cmds/asset')
+const path = require('path');
+
 let deployMessage = 'default deployed message';
 let deployError = null;
+
+const assetJson = {
+    name: 'testing_123',
+    version: '0.0.01',
+    description: 'dummy asset.json for testing'
+}
+
+const assetPath = path.join(__dirname, '..', 'asset/asset.json');
+
 const _tjmFunctions = {
     loadAsset: () => {
         if (deployError) {
@@ -23,22 +36,20 @@ describe('asset command testing', () => {
     let argv = {};
     let error = new Error();
 
-    it('deploy triggers load asset', (done) => {
+    it('deploy triggers load asset', () => {
         argv.c = 'localhost:5678';
         argv.cmd = 'deploy';
         deployMessage = 'deployed';
 
-        Promise.resolve()
-            .then(() => fs.ensureFile(assetPath))
+        return fs.ensureFile(assetPath)
             .then(() => fs.writeJson(assetPath, assetJson, {spaces: 4}))
             .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
             .then((result) => {
                 expect(result).toEqual('deployed');
             })
-            .catch(fail);
     });
 
-    it('deploy should respond to a request error', (done) => {
+    it('deploy should respond to a request error', () => {
         argv.c = 'localhost:5678';
         argv.cmd = 'deploy';
         const error = new Error('This is an error');
@@ -46,18 +57,17 @@ describe('asset command testing', () => {
         error.message = 'This is an error';
 
         deployError = error;
-        return require('../cmds/asset').handler(argv, _tjmFunctions)
+        return asset.handler(argv, _tjmFunctions)
             .catch((err) => {
                 expect(err).toBe('Could not connect to localhost:5678');
             });
     });
 
-     it('asset update should throw an error if no cluster data', (done) => {
+     it('asset update should throw an error if no cluster data', () => {
         argv = {};
         argv.cmd = 'update';
 
-        return Promise.resolve()
-            .then(() => require('../cmds/asset').handler(argv, _tjmFunctions))
-            .catch(err => expect(err).toBe('Cluster data is missing from asset.json or not specified using -c.'));
+        return expect(() => asset.handler(argv, _tjmFunctions))
+            .toThrow('Cluster data is missing from asset.json or not specified using -c.');
     });
 });
