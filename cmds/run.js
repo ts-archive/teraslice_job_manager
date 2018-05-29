@@ -25,13 +25,20 @@ exports.handler = (argv) => {
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
-    tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .catch((err) => {
-            if (err) {
-                reply.warning(err);
-            }
-            return tjmFunctions.teraslice.jobs.submit(jobContents);
-        })
+    const submitJobIfNeeded = () => {
+        if (!_.has(jobContents, 'tjm.cluster')) {
+            return Promise.resolve();
+        }
+        return tjmFunctions.alreadyRegisteredCheck(jobContents)
+            .catch((err) => {
+                if (err) {
+                    reply.warning(err);
+                }
+                return tjmFunctions.teraslice.jobs.submit(jobContents);
+            });
+    };
+
+    submitJobIfNeeded()
         .then(() => tjmFunctions.loadAsset())
         .then((jobResult) => {
             const jobId = jobResult.id();
