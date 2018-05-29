@@ -28,7 +28,7 @@ exports.handler = (argv) => {
     tjmFunctions.alreadyRegisteredCheck(jobContents)
         .catch((err) => {
             if (err) {
-                reply.warning(`Job ${jobContents.tjm.job_id} is already registered with cluster ${argv.c}`);
+                reply.warning(err);
             }
             return tjmFunctions.teraslice.jobs.submit(jobContents);
         })
