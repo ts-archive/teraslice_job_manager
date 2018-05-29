@@ -4,7 +4,6 @@ const fs = require('fs-extra');
 const path = require('path');
 
 describe('tests jsonDataFunctions', () => {
-
     it('job files do not have to end in json', () => {
         fs.writeFileSync(path.join(__dirname, '..', 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();

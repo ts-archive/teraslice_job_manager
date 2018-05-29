@@ -12,7 +12,7 @@ exports.handler = (argv) => {
     jsonData.metaDataCheck(jobContents);
     const tjmFunctions = require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
     const jobId = jobContents.tjm.job_id;
-    
+
     tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((status) => {

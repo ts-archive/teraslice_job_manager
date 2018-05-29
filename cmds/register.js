@@ -7,11 +7,15 @@ exports.command = 'register [jobFile]';
 exports.desc = 'Registers job with a cluster.  Specify the cluster with -c.\nAdds metadata to job file on completion\n';
 exports.builder = (yargs) => {
     yargs
-        .option('c', { describe: 'cluster where the job will be registered',
-            default: 'localhost:5678' })
-        .option('a', { describe: 'builds the assets and deploys to cluster, optional',
+        .option('c', {
+            describe: 'cluster where the job will be registered',
+            default: 'localhost:5678'
+        })
+        .option('a', {
+            describe: 'builds the assets and deploys to cluster, optional',
             default: false,
-            type: 'boolean' })
+            type: 'boolean'
+        })
         .example('tjm register jobfile.prod -c clusterDomain -a');
 };
 exports.handler = (argv) => {

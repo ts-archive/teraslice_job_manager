@@ -18,9 +18,9 @@ exports.handler = (argv) => {
         .then((result) => {
             if (result.status.status === 'stopped') {
                 reply.success(`Stopped job ${jobId} on ${jobContents.tjm.cluster}`);
-            } else {
-                return Promise.reject(new Error('Job could not be stopped'));
+                return Promise.resolve();
             }
+            return Promise.reject(new Error('Job could not be stopped'));
         })
         .catch(err => reply.fatal(err));
 };
