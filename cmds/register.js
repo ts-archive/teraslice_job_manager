@@ -7,11 +7,15 @@ exports.command = 'register [jobFile]';
 exports.desc = 'Registers job with a cluster.  Specify the cluster with -c.\nAdds metadata to job file on completion\n';
 exports.builder = (yargs) => {
     yargs
-        .option('c', { describe: 'cluster where the job will be registered',
-            default: 'localhost:5678' })
-        .option('a', { describe: 'builds the assets and deploys to cluster, optional',
+        .option('c', {
+            describe: 'cluster where the job will be registered',
+            default: 'localhost:5678'
+        })
+        .option('a', {
+            describe: 'builds the assets and deploys to cluster, optional',
             default: false,
-            type: 'boolean' })
+            type: 'boolean'
+        })
         .example('tjm register jobfile.prod -c clusterDomain -a');
 };
 exports.handler = (argv) => {
@@ -22,8 +26,7 @@ exports.handler = (argv) => {
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then((result) => {
             if (result === true) {
                 return Promise.reject(Error(`Job ${jobContents.tjm.job_id} is already registered with cluster ${argv.c}`));
@@ -41,5 +44,5 @@ exports.handler = (argv) => {
             tjmFunctions.createJsonFile(jobFilePath, jobContents);
             reply.success('Updated job file with tjm data');
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };

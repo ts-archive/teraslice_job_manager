@@ -14,18 +14,11 @@ exports.handler = (argv) => {
     const jobId = jobContents.tjm.job_id;
     const cluster = jobContents.tjm.cluster;
 
-    Promise.resolve()
-        .then(() => tjmFunctions.alreadyRegisteredCheck(jobContents))
-        .then((result) => {
-            if (result === false) {
-                reply.error('Job is not on the cluster');
-            }
-            return Promise.resolve(true);
-        })
+    tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
         .then((status) => {
             if (status !== 'paused' && status !== 'stopped') {
-                reply.error(`Job ${jobId} is not paused on ${cluster}, but is ${status}.  Use start to start job`);
+                reply.fatal(`Job ${jobId} is not paused on ${cluster}, but is ${status}.  Use start to start job`);
             }
             return Promise.resolve(true);
         })
@@ -34,8 +27,8 @@ exports.handler = (argv) => {
             if (result.status.status === 'running') {
                 reply.success(`Resumed job ${jobId} on ${cluster}`);
             } else {
-                reply.error('Could not resume job');
+                reply.fatal('Could not resume job');
             }
         })
-        .catch(err => reply.error(err.message));
+        .catch(err => reply.fatal(err.message));
 };
