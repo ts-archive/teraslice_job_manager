@@ -38,8 +38,8 @@ exports.handler = (argv) => {
             });
     };
 
-    submitJobIfNeeded()
-        .then(() => tjmFunctions.loadAsset())
+    tjmFunctions.loadAsset()
+        .then(() => submitJobIfNeeded())
         .then((jobResult) => {
             const jobId = jobResult.id();
             reply.success(`Started job: ${jobId} on ${argv.c}`);
