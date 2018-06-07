@@ -24,13 +24,6 @@ const _teraslice = {
     }
 };
 
-const _reply = {
-    error: function error(message) {
-        return message;
-    },
-    success: message => message
-};
-
 const packageJson = {
     name: 'common_processors',
     version: '0.0.29',
@@ -61,12 +54,11 @@ describe('tjmFunctions testing', () => {
     beforeEach(() => createNewAsset());
 
     it('check that cluster name includes a port', () => {
-        tjmFunctions.__testContext(_teraslice, _reply);
+        tjmFunctions.__testContext(_teraslice);
         expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
-        expect(() => { tjmFunctions.httpClusterNameCheck('localhost'); }).toThrow('Cluster names need to include a port number');
-        expect(() => { tjmFunctions.httpClusterNameCheck('http://localhost'); }).toThrow('Cluster names need to include a port number');
+        expect(() => tjmFunctions.httpClusterNameCheck('localhost')).toThrow('Cluster names need to include a port number');
+        expect(() => tjmFunctions.httpClusterNameCheck('http://localhost')).toThrow('Cluster names need to include a port number');
     });
-
 
     it('check that cluster name starts with http', () => {
         expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
@@ -90,6 +82,13 @@ describe('tjmFunctions testing', () => {
 
     it('alreadyRegisteredCheck should reject if the job exists', () => {
         someJobId = 'notTheJobYouAreLookingFor';
+        jobContents = {
+            tjm: {
+                cluster: 'http://localhost:5678',
+                job_id: 'jobYouAreLookingFor'
+            }
+        };
+        tjmFunctions.__testContext(_teraslice);
         return tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch((err) => {
                 expect(err.message).toEqual('Job is not on the cluster');
@@ -211,12 +210,21 @@ describe('tjmFunctions testing', () => {
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
 
-        return tjmFunctions.loadAsset()
-            .then(() => {
+        const assetJson = {
+            name: 'testing_123',
+            version: '0.0.01',
+            description: 'dummy asset.json for testing'
+        };
+        return Promise.all([
+            fs.writeFile(path.join(__dirname, '..', 'asset/asset.json'), JSON.stringify(assetJson, null, 4)),
+            fs.emptyDir(path.join(__dirname, '..', 'builds'))
+        ])
+        .then(() => tjmFunctions.loadAsset())
+        .then(() => {
                 const updatedAssetJson = require(path.join(__dirname, '..', 'asset/asset.json'));
                 expect(updatedAssetJson.tjm.clusters[0]).toBe('http://localhost:5678');
                 expect(fs.pathExistsSync(path.join(__dirname, '..', 'builds/processors.zip'))).toBe(true);
                 expect(fs.pathExistsSync(path.join(__dirname, '..', 'asset/package.json'))).toBe(true);
-            });
+        });
     });
 });

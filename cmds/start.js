@@ -16,13 +16,6 @@ exports.handler = (argv) => {
     const jobId = jobContents.tjm.job_id;
 
     tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
-        .then((status) => {
-            if (status === 'running' || status === 'paused') {
-                return Promise.reject(new Error(`Job is already running on ${jobContents.tjm.cluster}, check job status`));
-            }
-            return Promise.resolve();
-        })
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).start())
         .then((result) => {
             if (_.has(result, 'job_id')) {

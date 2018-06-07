@@ -29,7 +29,9 @@ module.exports = () => {
     }
 
     function warning(message) {
-        console.log(chalk.yellow(message));
+        if (!process.env.TJM_TEST_MODE) {
+            console.log(chalk.yellow(message));
+        }
     }
 
     return {

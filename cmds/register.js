@@ -11,6 +11,11 @@ exports.builder = (yargs) => {
             describe: 'cluster where the job will be registered',
             default: 'localhost:5678'
         })
+        .option('r', {
+            describe: 'option to run the job immediately after being registered',
+            default: false,
+            type: 'boolean'
+        })
         .option('a', {
             describe: 'builds the assets and deploys to cluster, optional',
             default: false,
@@ -18,23 +23,21 @@ exports.builder = (yargs) => {
         })
         .example('tjm register jobfile.prod -c clusterDomain -a');
 };
-exports.handler = (argv) => {
+exports.handler = (argv, _testTjmFunctions) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
-    const tjmFunctions = require('./cmd_functions/functions')(argv);
+    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
     const jobData = jsonData.jobFileHandler(argv.jobFile);
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
-    tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then((result) => {
-            if (result === true) {
-                return Promise.reject(Error(`Job ${jobContents.tjm.job_id} is already registered with cluster ${argv.c}`));
+    return tjmFunctions.loadAsset()
+        .then(() => {
+            if (!_.has(jobContents, 'tjm.cluster')) {
+                return tjmFunctions.teraslice.jobs.submit(jobContents, !argv.r);
             }
-            return Promise.resolve(true);
+            return Promise.reject(new Error(`Job is already registered on ${argv.c}`))
         })
-        .then(() => tjmFunctions.loadAsset())
-        .then(() => tjmFunctions.teraslice.jobs.submit(jobContents, true))
         .then((result) => {
             const jobId = result.id();
             reply.success(`Successfully registered job: ${jobId} on ${argv.c}`);
@@ -43,6 +46,11 @@ exports.handler = (argv) => {
             _.set(jobContents, 'tjm.job_id', jobId);
             tjmFunctions.createJsonFile(jobFilePath, jobContents);
             reply.success('Updated job file with tjm data');
+        })
+        .then(() => {
+            if (argv.r) {
+                reply.success(`New job started on ${argv.c}`);
+            }
         })
         .catch(err => reply.fatal(err.message));
 };

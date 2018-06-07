@@ -34,7 +34,7 @@ exports.builder = (yargs) => {
         .choices('cmd', ['deploy', 'update', 'status'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
-exports.handler = (argv, testTjmFunctions) => {
+exports.handler = (argv, _testTjmFunctions) => {
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset.json', true);
     const assetJson = fileData[1];
@@ -54,7 +54,7 @@ exports.handler = (argv, testTjmFunctions) => {
         reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
     }
 
-    const tjmFunctions = testTjmFunctions || require('./cmd_functions/functions')(argv);
+    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
 
     function latestAssetVersion(cluster, assetName) {
         const teraslice = require('teraslice-client-js')({
