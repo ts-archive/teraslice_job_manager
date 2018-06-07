@@ -7,22 +7,23 @@ exports.desc = 'Starts job on the cluster in the job file\n';
 exports.builder = (yargs) => {
     yargs.example('tjm start jobfile.prod.json');
 };
-exports.handler = (argv) => {
+exports.handler = (argv, _testFunctions) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
     const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
     jsonData.metaDataCheck(jobContents);
-    const tjmFunctions = require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
     const jobId = jobContents.tjm.job_id;
 
-    tjmFunctions.alreadyRegisteredCheck(jobContents)
+    return tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).start())
-        .then((result) => {
-            if (_.has(result, 'job_id')) {
+        .then((startResponse) => {
+            if (_.has(startResponse, 'job_id')) {
                 reply.success(`Started job ${jobId}`);
             } else {
                 reply.fatal('Could not start job');
             }
+            return startResponse;
         })
         .catch(err => reply.fatal(err.message));
 };
