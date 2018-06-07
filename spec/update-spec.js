@@ -44,7 +44,7 @@ describe('should update job file with option to restart job', () => {
             .catch(() => done());
     })
 
-    it('should update job and return new job contents if no new job file then throw error', (done) => {
+    it('should throw an error if job data not returned from teraslice client', (done) => {
         registeredCheck = Promise.resolve();
         newJobContents = {};
         return update.handler(argv, _tjmTestFunctions)
@@ -52,7 +52,7 @@ describe('should update job file with option to restart job', () => {
             .catch(() => done());
     })
 
-    it('should update job and return started status with argv.r is present', (done) => {
+    it('should update job and return status if argv.r is present', (done) => {
         registeredCheck = Promise.resolve();
         newJobContents = {
             jobName: 'sameName',

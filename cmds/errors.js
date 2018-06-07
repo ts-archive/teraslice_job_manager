@@ -20,7 +20,7 @@ exports.handler = (argv, _testFunctions) => {
                 reply.success('This job has no errors');
             } else {
                 errors.forEach((error) => {
-                    reply.warning(error);
+                    reply.warning(JSON.stringify(error, null, 4));
                 });
             }
             return errors

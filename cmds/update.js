@@ -51,7 +51,7 @@ exports.handler = (argv, _testFunctions) => {
                 return Promise.reject(new Error ('Could not update job'));
             }
             reply.success(`Job was updated on ${cluster}`);
-            reply.success(updateResponse);
+            reply.success(JSON.stringify(updateResponse, null, 4));
             return Promise.resolve();
         })
         .then(() => {
