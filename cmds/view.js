@@ -1,10 +1,7 @@
 'use strict';
 
-// removes tjm data from json file
-const fs = require('fs-extra');
-
 exports.command = 'view [jobFile]';
-exports.desc = 'Retrieves the currently running job from the cluster and logs it on the console';
+exports.desc = 'Displays the job file as saved on the cluster specified in the tjm data';
 exports.builder = (yargs) => {
     yargs.example('tjm view jobfile.prod');
 };
