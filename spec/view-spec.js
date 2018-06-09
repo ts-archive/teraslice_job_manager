@@ -3,49 +3,41 @@
 const jasmine = require('jasmine');
 const fs = require('fs-extra');
 const path = require('path');
+const view = require('../cmds/view');
+const Promise = require('bluebird');
 
-const _tjmFunctions = {
+const argv = {
+    jobFile: 'spec/fixtures/test_job_file.json'
+};
+let registeredCheck;
+let specData;
+const _tjmTestFunctions = {
+    alreadyRegisteredCheck: () => registeredCheck,
     teraslice: {
         jobs: {
             wrap: (jobContents) => {
-                    return { spec: () => {
-                        return Promise.resolve({
-                            job_id: jobData
-                        })
-                    }
-                }
+                    return { spec: () => Promise.resolve(specData) }
             }
-        }
-    },
-    reply: {
-        error: function error (message) {
-            return message;
-        },
-        warning: (message) => {
-            return message;
         }
     }
 }
 
-describe('reset should remove tjm data from file', () => {
+describe('view should display the job saved in the cluster', () => {
+    it('should throw an error if alreadyRegisteredCheck fails', (done) => {
+        registeredCheck = Promise.reject(new Error('Job is not on the cluster'));
+        return view.handler(argv, _tjmTestFunctions)
+            .then(done.fail)
+            .catch(() => done());
+    })
 
-    it('tjm data should be pulled from file', () => {
-        // copy fixture file
-        const argv = {
-            jobFile: 'spec/fixtures/resetJobFile.json'
-        }
-
-        const fakeJobData = require('./fixtures/test_job_file.json');
-        const assetPath = path.join(process.cwd(), 'spec/fixtures/resetJobFile.json');
-        return fs.writeJson(assetPath, fakeJobData, {spaces: 4})
-            .then(() => require('../cmds/reset').handler(argv, _reply))
-            .then((result) => {
-                expect(result).toBe('TJM data was removed from spec/fixtures/resetJobFile.json');
+    it('should display save job data from cluster', (done) => {
+        registeredCheck = Promise.resolve();
+        specData = 'job spec goes here';
+        return view.handler(argv, _tjmTestFunctions)
+            .then((jobSpec) => {
+                expect(jobSpec).toEqual('job spec goes here')
             })
-            .then(() => {
-                const updatedJobData = require('./fixtures/resetJobFile.json');
-                expect(updatedJobData.tjm).toBeUndefined();
-            })
-            .catch(fail);
+            .catch(done.fail)
+            .finally(() => done());
     })
 })

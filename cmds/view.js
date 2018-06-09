@@ -11,20 +11,18 @@ exports.builder = (yargs) => {
 exports.handler = (argv, _testFunctions) => {
     let reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
-    const jobData = jsonData.jobFileHandler(argv.jobFile);
-    const jobContents = jobData[1];
+    const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
+    jsonData.metaDataCheck(jobContents);
     const jobId = jobContents.tjm.job_id;
-    let tjmFunctions = require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
+    let tjmFunctions = _testFunctions ||
+        require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
 
-    if (_testFunctions) {
-        reply = _testFunctions.reply;
-        tjmFunctions = _testFunctions.tjmFunctions;
-    }
-
-    return tjmFunctions.teraslice.jobs.wrap(jobId).spec()
+    return tjmFunctions.alreadyRegisteredCheck(jobContents)
+        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).spec())
         .then(jobSpec => {
             reply.warning(`Current Job File on Cluster ${jobContents.tjm.cluster}:`);
-            reply.log(jobSpec);
+            reply.success(JSON.stringify(jobSpec, null, 4));
+            return jobSpec;
         })
-        .catch(err => reply.error(err));
+        .catch(err => reply.fatal(err));
 };

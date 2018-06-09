@@ -34,15 +34,10 @@ module.exports = () => {
         }
     }
 
-    function log(message) {
-        console.log(message);
-    }
-
     return {
         fatal,
         error,
         success,
-        warning,
-        log
+        warning
     };
 };
