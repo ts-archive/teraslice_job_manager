@@ -17,8 +17,8 @@ exports.handler = (argv, _testFunctions) => {
     return tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).spec())
         .then(jobSpec => {
-            reply.warning(`Current Job File on Cluster ${jobContents.tjm.cluster}:`);
-            reply.success(JSON.stringify(jobSpec, null, 4));
+            reply.yellow(`Current Job File on Cluster ${jobContents.tjm.cluster}:`);
+            reply.green(JSON.stringify(jobSpec, null, 4));
             return jobSpec;
         })
         .catch(err => reply.fatal(err));
