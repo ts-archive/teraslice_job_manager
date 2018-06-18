@@ -36,7 +36,7 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const jsonData = require('./cmd_functions/json_data_functions')();
-    const fileData = jsonData.jobFileHandler('asset.json', true);
+    const fileData = jsonData.jobFileHandler('asset/asset.json', false);
     const assetJson = fileData[1];
     // const assetJsonPath = fileData[0];
 

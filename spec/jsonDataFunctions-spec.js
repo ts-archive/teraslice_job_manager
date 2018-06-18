@@ -25,7 +25,7 @@ describe('tests jsonDataFunctions', () => {
         fs.emptyDirSync(path.join(__dirname, '..', 'asset'));
         fs.writeFileSync(path.join(__dirname, '..', 'asset/assetTest.json'), JSON.stringify({ test: 'test' }));
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        const returnData = jobFileFunctions.jobFileHandler('assetTest.json', true);
+        const returnData = jobFileFunctions.jobFileHandler('assetTest.json', false, true);
         expect(returnData[0]).toBe(path.join(__dirname, '..', 'asset/assetTest.json'));
         expect(returnData[1].test).toBe('test');
     });
@@ -42,7 +42,7 @@ describe('tests jsonDataFunctions', () => {
         fs.unlinkSync(path.join(__dirname, '..', 'testFile.json'));
     });
 
-    it('response if metadata is not in file, but needs to be', () => {
+    it('should check if tjm data is in the job file', () => {
         const jsonFileData = {
             name: 'this is a name',
             version: '0.0.1',
@@ -54,19 +54,18 @@ describe('tests jsonDataFunctions', () => {
             clusters: ['http://localhost', 'http://cluster2']
         };
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        let metaDataCheckResponse = jobFileFunctions.metaDataCheck(jsonFileData);
-        expect(metaDataCheckResponse).toBe(true);
+        expect(jobFileFunctions._tjmDataCheck(jsonFileData)).toBe(true);
         delete jsonFileData.tjm;
+
         // test metadata for job
         jsonFileData.tjm = {
             cluster: 'http://localhost'
         };
-        metaDataCheckResponse = jobFileFunctions.metaDataCheck(jsonFileData);
-        expect(metaDataCheckResponse).toBe(true);
+        expect(jobFileFunctions._tjmDataCheck(jsonFileData)).toBe(true);
 
         // test no metadata
         delete jsonFileData.tjm;
         jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(jobFileFunctions.metaDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
+        expect(jobFileFunctions._tjmDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
     });
 });

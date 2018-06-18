@@ -9,8 +9,7 @@ exports.handler = (argv, _testFunctions) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
     // job related data needed execute command
-    const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
-    jsonData.metaDataCheck(jobContents);
+    const jobContents = jsonData.jobFileHandler(argv.jobFile, true)[1];
     const jobId = jobContents.tjm.job_id;
     const cluster = jobContents.tjm.cluster;
     // teraslice client functions or test functions

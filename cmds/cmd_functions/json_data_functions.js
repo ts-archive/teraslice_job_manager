@@ -5,20 +5,17 @@ const path = require('path');
 const reply = require('./reply')();
 
 module.exports = () => {
-    function jobFileHandler(fileName, asset) {
+    function jobFileHandler(fileName, tjmCheck) {
         let fName = fileName;
 
         if (!fName) {
-            reply.fatal('Missing the job file!');
+            reply.fatal('Missing the file!');
         }
 
         if (fName.lastIndexOf('.json') !== fName.length - 5) {
             fName += '.json';
         }
 
-        if (asset) {
-            fName = `asset/${fileName}`;
-        }
         const jobFilePath = path.join(process.cwd(), fName);
         let jobContents;
 
@@ -32,10 +29,14 @@ module.exports = () => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
+        if (tjmCheck) {
+            _tjmDataCheck(jobContents);
+        }
+
         return [jobFilePath, jobContents];
     }
 
-    function metaDataCheck(jsonData) {
+    function _tjmDataCheck(jsonData) {
         if (!(_.has(jsonData, 'tjm.clusters') || _.has(jsonData, 'tjm.cluster'))) {
             reply.fatal('No teraslice job manager metadata, register the job or deploy the assets');
         }
@@ -54,7 +55,7 @@ module.exports = () => {
 
     return {
         jobFileHandler,
-        metaDataCheck,
+        _tjmDataCheck,
         getClusters
     };
 };
