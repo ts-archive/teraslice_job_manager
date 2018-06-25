@@ -15,7 +15,7 @@ exports.handler = (argv, _testFunctions) => {
         require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
 
     return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).spec())
+        .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).spec())
         .then(jobSpec => {
             reply.yellow(`Current Job File on Cluster ${jobContents.tjm.cluster}:`);
             reply.green(JSON.stringify(jobSpec, null, 4));

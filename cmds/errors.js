@@ -14,7 +14,7 @@ exports.handler = (argv, _testFunctions) => {
     const jobId = jobContents.tjm.job_id;
 
     return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).errors())
+        .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).errors())
         .then((errors) => {
             if (errors.length === 0) {
                 reply.green('This job has no errors');

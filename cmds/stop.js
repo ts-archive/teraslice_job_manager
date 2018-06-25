@@ -14,7 +14,7 @@ exports.handler = (argv, _testFunctions) => {
     const jobId = jobContents.tjm.job_id;
 
     return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).stop())
+        .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).stop())
         .then((stopResponse) => {
             if (!stopResponse.status.status === 'stopped') {
                 return Promise.reject(new Error('Job could not be stopped'));                

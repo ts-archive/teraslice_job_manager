@@ -34,7 +34,7 @@ exports.handler = (argv, _testTjmFunctions) => {
     return tjmFunctions.loadAsset()
         .then(() => {
             if (!_.has(jobContents, 'tjm.cluster')) {
-                return tjmFunctions.teraslice.jobs.submit(jobContents, !argv.r);
+                return tjmFunctions.terasliceClient.jobs.submit(jobContents, !argv.r);
             }
             return Promise.reject(new Error(`Job is already registered on ${argv.c}`))
         })

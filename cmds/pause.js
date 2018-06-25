@@ -18,14 +18,14 @@ exports.handler = (argv, _testFunctions) => {
         require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
 
     return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())
+        .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).status())
         .then((jobStatus) => {
             if (jobStatus !== 'running') {
                 reply.fatal(`Job ${jobId} is not running on ${cluster}.  Status is ${jobStatus}`);
             }
             return Promise.resolve();
         })
-        .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).pause())
+        .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).pause())
         .then((result) => {
             if (result.status.status === 'paused') {
                 reply.green(`Paused job ${jobId} on ${cluster}`);

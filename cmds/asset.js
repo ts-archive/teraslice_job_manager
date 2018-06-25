@@ -31,7 +31,7 @@ exports.builder = (yargs) => {
             default: false,
             type: 'boolean'
         })
-        .choices('cmd', ['deploy', 'update', 'status'])
+        .choices('cmd', ['deploy', 'update', 'status', 'reset'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv, _testTjmFunctions) => {
@@ -57,10 +57,10 @@ exports.handler = (argv, _testTjmFunctions) => {
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
 
     function latestAssetVersion(cluster, assetName) {
-        const teraslice = require('teraslice-client-js')({
+        const terasliceClient = require('teraslice-client-js')({
             host: `${tjmFunctions.httpClusterNameCheck(cluster)}`
         });
-        teraslice.cluster.txt(`assets/${assetName}`)
+        terasliceClient.cluster.txt(`assets/${assetName}`)
             .then((clientResponse) => {
                 const byLine = clientResponse.split('\n');
                 const trimTop = byLine.slice(2);
@@ -83,7 +83,15 @@ exports.handler = (argv, _testTjmFunctions) => {
     }
 
     if (argv.cmd === 'deploy') {
-        return tjmFunctions.loadAsset()
+        return Promise.resolve()
+            .then(() => {
+                if (_.has(assetJson.tjm, 'clusters') &&
+                    _.indexOf(assetJson.tjm.clusters, 
+                        tjmFunctions.httpClusterNameCheck(argv.c)) >= 0) {
+                    return Promise.reject( new Error(`Assets have already been deployed to ${argv.c}, use update`));
+                }
+            })
+            .then(() => tjmFunctions.loadAsset())
             .catch((err) => {
                 if (err.name === 'RequestError') {
                     reply.fatal(`Could not connect to ${argv.c}`);
@@ -101,10 +109,10 @@ exports.handler = (argv, _testTjmFunctions) => {
             .then(() => fs.readFile(`${process.cwd()}/builds/processors.zip`))
             .then((zippedFileData) => {
                 function postAssets(cName) {
-                    const teraslice = require('teraslice-client-js')({
+                    const terasliceClient = require('teraslice-client-js')({
                         host: `${tjmFunctions.httpClusterNameCheck(cName)}`
                     });
-                    return teraslice.assets.post(zippedFileData);
+                    return terasliceClient.assets.post(zippedFileData);
                 }
                 return clusters.forEach((cluster) => {
                     postAssets(cluster)
@@ -125,6 +133,17 @@ exports.handler = (argv, _testTjmFunctions) => {
     } else if (argv.cmd === 'status') {
         const assetName = assetJson.name;
         return Promise.each(cluster => latestAssetVersion(cluster, assetName));
+    } else if (argv.cmd === 'resetDev') {
+        // for dev purposed only, in prod need to upload most recent version
+        const assetName = assetJson.name;
+        tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`)
+            .then(assets => assets[0].id)
+            .then(assetId => tjmFunctions.terasliceClient.assets.delete(assetId))
+            .then((response) => {
+                const parsedResponse = JSON.parse(response);
+                reply.green(`removed ${parsedResponse.assetId} from ${argv.c}`)
+            })
+            .then(() => tjmFunctions.loadAsset())
+            .catch(err => reply.fatal(err));
     }
-    return Promise.reject(new Error('unknown command'));
 };

@@ -11,7 +11,7 @@ let jobContents;
 let someJobId;
 let assetObject;
 
-const _teraslice = {
+const _terasliceClient = {
     jobs: {
         wrap: () => ({
             spec: () => Promise.resolve({
@@ -54,7 +54,7 @@ describe('tjmFunctions testing', () => {
     beforeEach(() => createNewAsset());
 
     it('check that cluster name includes a port', () => {
-        tjmFunctions.__testContext(_teraslice);
+        tjmFunctions.__testContext(_terasliceClient);
         expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
         expect(() => tjmFunctions.httpClusterNameCheck('localhost')).toThrow('Cluster names need to include a port number');
         expect(() => tjmFunctions.httpClusterNameCheck('http://localhost')).toThrow('Cluster names need to include a port number');
@@ -76,7 +76,7 @@ describe('tjmFunctions testing', () => {
 
         someJobId = 'jobYouAreLookingFor';
 
-        tjmFunctions.__testContext(_teraslice);
+        tjmFunctions.__testContext(_terasliceClient);
         return tjmFunctions.alreadyRegisteredCheck(jobContents);
     });
 
@@ -88,7 +88,7 @@ describe('tjmFunctions testing', () => {
                 job_id: 'jobYouAreLookingFor'
             }
         };
-        tjmFunctions.__testContext(_teraslice);
+        tjmFunctions.__testContext(_terasliceClient);
         return tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch((err) => {
                 expect(err.message).toEqual('Job is not on the cluster');
@@ -147,22 +147,6 @@ describe('tjmFunctions testing', () => {
             });
     });
 
-    it('if cluster already in metadata throw error', () => {
-        const assetJson = {
-            name: 'testing_123',
-            version: '0.0.01',
-            description: 'dummy asset.json for testing',
-            tjm: {
-                clusters: ['http://localhost:5678', 'http://newCluster:5678', 'http://anotherCluster:5678']
-            }
-        };
-        argv.c = 'http://localhost:5678';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
-
-        return fs.writeJson(path.join(__dirname, '..', 'asset/asset.json'), assetJson, { spaces: 4 })
-            .then(() => expect(tjmFunctions.__testFunctions()._updateAssetMetadata).toThrowError('Assets have already been deployed to http://localhost:5678, use update'));
-    });
-
     it('check that assets are zipped', () => {
         const assetJson = {
             name: 'testing_123',
@@ -193,7 +177,7 @@ describe('tjmFunctions testing', () => {
         return fs.emptyDir(path.join(__dirname, '..', 'builds'))
             .then(() => fs.writeFile(path.join(__dirname, '..', 'builds/processors.zip'), 'this is some sweet text'))
             .then(() => {
-                tjmFunctions.__testContext(_teraslice);
+                tjmFunctions.__testContext(_terasliceClient);
                 return tjmFunctions.__testFunctions()._postAsset();
             })
             .then((response) => {
@@ -208,7 +192,7 @@ describe('tjmFunctions testing', () => {
         argv.c = 'localhost:5678';
         argv.a = true;
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
-        tjmFunctions.__testContext(_teraslice);
+        tjmFunctions.__testContext(_terasliceClient);
 
         const assetJson = {
             name: 'testing_123',

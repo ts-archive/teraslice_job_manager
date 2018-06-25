@@ -17,13 +17,13 @@ module.exports = (argv, clusterName) => {
         cluster = 'http://localhost:5678';
     }
     httpClusterNameCheck(cluster);
-    let teraslice = require('teraslice-client-js')({
+    let terasliceClient = require('teraslice-client-js')({
         host: `${httpClusterNameCheck(cluster)}`
     });
 
     function alreadyRegisteredCheck(jobContents) {
         if (_.has(jobContents, 'tjm.cluster')) {
-            return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
+            return terasliceClient.jobs.wrap(jobContents.tjm.job_id).spec()
                 .then((jobSpec) => {
                     if (jobSpec.job_id === jobContents.tjm.job_id) {
                         return Promise.resolve();
@@ -37,7 +37,7 @@ module.exports = (argv, clusterName) => {
     function _postAsset() {
         return Promise.resolve()
             .then(() => fs.readFile(path.join(process.cwd(), 'builds', 'processors.zip')))
-            .then(zipFile => teraslice.assets.post(zipFile))
+            .then(zipFile => terasliceClient.assets.post(zipFile))
             .then(assetPostResponse => assetPostResponse);
     }
 
@@ -125,9 +125,6 @@ module.exports = (argv, clusterName) => {
 
         const c = argv.l ? 'http://localhost:5678' : argv.c;
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(c)) >= 0) {
-                throw new Error(`Assets have already been deployed to ${c}, use update`);
-            }
             assetJson.tjm.clusters.push(httpClusterNameCheck(c));
             return assetJson;
         }
@@ -135,8 +132,8 @@ module.exports = (argv, clusterName) => {
         return assetJson;
     }
 
-    function __testContext(_teraslice) {
-        teraslice = _teraslice;
+    function __testContext(_terasliceClient) {
+        terasliceClient = _terasliceClient;
     }
 
     function __testFunctions() {
@@ -151,7 +148,7 @@ module.exports = (argv, clusterName) => {
         httpClusterNameCheck,
         loadAsset,
         createJsonFile,
-        teraslice,
+        terasliceClient,
         __testContext,
         __testFunctions,
         zipAsset,
