@@ -34,7 +34,8 @@ const packageJson = {
 function createNewAsset() {
     const assetPath = path.join(__dirname, '..', 'asset/asset.json');
     const packagePath = path.join(__dirname, '..', 'asset/package.json');
-    return fs.emptyDir(path.join(__dirname, '..', 'asset'))
+    return Promise.resolve()
+        .then(() => fs.emptyDir(path.join(__dirname, '..', 'asset')))
         .then(() => Promise.all([
             fs.writeJson(assetPath, {
                 name: 'testing_123',
@@ -115,7 +116,9 @@ describe('tjmFunctions testing', () => {
             });
     });
 
-    it('cluster is added to array in asset.json if a new cluster', () => createNewAsset()
+    it('cluster is added to array in asset.json if a new cluster', (done) => {
+        
+        return createNewAsset()
         .then(() => {
             const assetJson = {
                 name: 'testing_123',
@@ -136,7 +139,21 @@ describe('tjmFunctions testing', () => {
             expect(jsonResult.tjm).toBeDefined();
             expect(jsonResult.tjm.clusters[0]).toBe('http://localhost:5678');
             expect(jsonResult.tjm.clusters[1]).toBe('http://newCluster:5678');
-        }));
+        })
+        .then(() => {
+            argv.c = 'http://newCluster:5678';
+            tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+            return tjmFunctions.__testFunctions()._updateAssetMetadata();
+        })
+        .then((jsonResult) => {
+            expect(jsonResult.tjm).toBeDefined();
+            expect(jsonResult.tjm.clusters[0]).toBe('http://localhost:5678');
+            expect(jsonResult.tjm.clusters[1]).toBe('http://newCluster:5678');
+            expect(jsonResult.tjm.clusters.length).toBe(2);
+        })
+        .catch(done.fail)
+        .finally(() => done());
+    });
 
     it('no asset.json throw error', () => {
         argv.c = 'http://localhost:5678';

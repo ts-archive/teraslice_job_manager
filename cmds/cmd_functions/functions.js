@@ -124,7 +124,7 @@ module.exports = (argv, clusterName) => {
         }
 
         const c = argv.l ? 'http://localhost:5678' : argv.c;
-        if (_.has(assetJson, 'tjm.clusters')) {
+        if (_.has(assetJson, 'tjm.clusters') && !_.includes(assetJson.tjm.clusters, c)) {
             assetJson.tjm.clusters.push(httpClusterNameCheck(c));
             return assetJson;
         }

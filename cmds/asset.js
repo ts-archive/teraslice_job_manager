@@ -31,7 +31,7 @@ exports.builder = (yargs) => {
             default: false,
             type: 'boolean'
         })
-        .choices('cmd', ['deploy', 'update', 'status', 'reset'])
+        .choices('cmd', ['deploy', 'update', 'status', 'replace'])
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv, _testTjmFunctions) => {
@@ -133,7 +133,7 @@ exports.handler = (argv, _testTjmFunctions) => {
     } else if (argv.cmd === 'status') {
         const assetName = assetJson.name;
         return Promise.each(cluster => latestAssetVersion(cluster, assetName));
-    } else if (argv.cmd === 'resetDev') {
+    } else if (argv.cmd === 'replace') {
         // for dev purposed only, in prod need to upload most recent version
         const assetName = assetJson.name;
         tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`)
