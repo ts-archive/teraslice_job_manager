@@ -49,7 +49,7 @@ exports.handler = (argv, _testTjmFunctions) => {
         clusters.push(argv.c);
     }
     if (argv.l) {
-        argv.cluster = argv.l;
+        argv.cluster = 'http://localhost:5678';
         clusters.push('http://localhost:5678');
     }
     if (_.isEmpty(clusters)) {
@@ -58,12 +58,12 @@ exports.handler = (argv, _testTjmFunctions) => {
     if (_.isEmpty(clusters)) {
         reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
     }
-
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
 
-    function latestAssetVersion(cluster, assetName) {
+    function latestAssetVersion(cluster) {
+        const assetName = assetJson.name;
         const teraslice = require('teraslice-client-js')({
-            host: `${tjmFunctions.httpClusterNameCheck(cluster)}`
+            host: `${cluster}`
         });
         teraslice.cluster.txt(`assets/${assetName}`)
             .then((clientResponse) => {
@@ -128,8 +128,7 @@ exports.handler = (argv, _testTjmFunctions) => {
             })
             .catch(err => reply.fatal((err.message)));
     } else if (argv.cmd === 'status') {
-        const assetName = assetJson.name;
-        return Promise.each(cluster => latestAssetVersion(cluster, assetName));
+        clusters.forEach(cluster => latestAssetVersion(cluster))
+        
     }
-    return Promise.reject(new Error('unknown command'));
 };
