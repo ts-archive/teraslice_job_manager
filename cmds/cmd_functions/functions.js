@@ -7,26 +7,19 @@ const Promise = require('bluebird');
 const reply = require('./reply')();
 const path = require('path');
 
-module.exports = (argv, clusterName) => {
-    let cluster;
-    if (clusterName) {
-        cluster = clusterName;
-    } else if (argv.c) {
-        cluster = argv.c;
-    } else if (argv.l) {
-        cluster = 'http://localhost:5678';
-    }
-    httpClusterNameCheck(cluster);
+module.exports = (argv) => {
     let teraslice = require('teraslice-client-js')({
-        host: `${httpClusterNameCheck(cluster)}`
+        host: `${argv.cluster}`
     });
 
-    function alreadyRegisteredCheck(jobContents) {
+    function alreadyRegisteredCheck() {
+        const jobContents = argv.contents;
         if (_.has(jobContents, 'tjm.cluster')) {
             return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
                 .then((jobSpec) => {
                     if (jobSpec.job_id === jobContents.tjm.job_id) {
-                        return Promise.resolve();
+                        // return true for testing purposes
+                        return Promise.resolve(true);
                     }
                     return Promise.reject(new Error('Job is not on the cluster'));
                 });
@@ -72,21 +65,6 @@ module.exports = (argv, clusterName) => {
         return fs.writeJson(filePath, jsonObject, { spaces: 4 });
     }
 
-    function httpClusterNameCheck(url) {
-        if (!url) {
-            return '';
-        }
-        // needs to have a port number
-        if (url.lastIndexOf(':') !== url.length - 5) {
-            reply.fatal('Cluster names need to include a port number');
-        }
-
-        if (url.indexOf('http') !== 0) {
-            return `http://${url}`;
-        }
-        return url;
-    }
-
     function zipAsset() {
         const zipMessage = {};
 
@@ -125,13 +103,13 @@ module.exports = (argv, clusterName) => {
 
         const c = argv.l ? 'http://localhost:5678' : argv.c;
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, httpClusterNameCheck(c)) >= 0) {
+            if (_.indexOf(assetJson.tjm.clusters, c) >= 0) {
                 throw new Error(`Assets have already been deployed to ${c}, use update`);
             }
-            assetJson.tjm.clusters.push(httpClusterNameCheck(c));
+            assetJson.tjm.clusters.push(c);
             return assetJson;
         }
-        _.set(assetJson, 'tjm.clusters', [httpClusterNameCheck(c)]);
+        _.set(assetJson, 'tjm.clusters', [c]);
         return assetJson;
     }
 
@@ -148,7 +126,6 @@ module.exports = (argv, clusterName) => {
 
     return {
         alreadyRegisteredCheck,
-        httpClusterNameCheck,
         loadAsset,
         createJsonFile,
         teraslice,

@@ -9,7 +9,7 @@ exports.builder = (yargs) => {
     yargs
         .option('c', {
             describe: 'cluster where the job will be registered',
-            default: 'localhost:5678'
+            default: 'http://localhost:5678'
         })
         .option('r', {
             describe: 'option to run the job immediately after being registered',
@@ -25,23 +25,22 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const reply = require('./cmd_functions/reply')();
-    const jobData = require('./cmd_functions/json_data_functions')()
-        .jobFileHandler(argv.jobFile, false);
+    require('./cmd_functions/json_data_functions')(argv).returnJobData(true);
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
-    const jobContents = jobData.contents;
-    const jobFilePath = jobData.file_path;
+    const jobContents = argv.contents;
+    const jobFilePath = argv.file_path;
 
     return tjmFunctions.loadAsset()
         .then(() => {
             if (!_.has(jobContents, 'tjm.cluster')) {
                 return tjmFunctions.teraslice.jobs.submit(jobContents, !argv.r);
             }
-            return Promise.reject(new Error(`Job is already registered on ${argv.c}`))
+            return Promise.reject(new Error(`Job is already registered on ${argv.cluster}`))
         })
         .then((result) => {
             const jobId = result.id();
-            reply.green(`Successfully registered job: ${jobId} on ${argv.c}`);
-            _.set(jobContents, 'tjm.cluster', tjmFunctions.httpClusterNameCheck(argv.c));
+            reply.green(`Successfully registered job: ${jobId} on ${argv.cluster}`);
+            _.set(jobContents, 'tjm.cluster', argv.cluster);
             _.set(jobContents, 'tjm.version', '0.0.1');
             _.set(jobContents, 'tjm.job_id', jobId);
             tjmFunctions.createJsonFile(jobFilePath, jobContents);
@@ -49,8 +48,8 @@ exports.handler = (argv, _testTjmFunctions) => {
         })
         .then(() => {
             if (argv.r) {
-                reply.green(`New job started on ${argv.c}`);
+                reply.green(`New job started on ${argv.cluster}`);
             }
         })
-        .catch(err => reply.fatal(err.message));
+        .catch(err => reply.fatal(err));
 };

@@ -4,24 +4,26 @@ const _ = require('lodash');
 const path = require('path');
 const reply = require('./reply')();
 
-module.exports = () => {
-    function returnJobData(argv) {
-        jobData = jobFileHandler(argv.fileName, argv.tjmCheck);
+module.exports = (argv) => {
+    function returnJobData(noTjmCheck) {
+        // some commands should note have tjm data and should not check for it
+        argv.tjmCheck = noTjmCheck ? false : true;
+        jobFileHandler();
         // return the cluster to work with
-        let clusterName;
-        if (_.has(jobData.tjm, 'cluster')) {
-            clusterName = jobData.tjm.cluser;
+        if (_.has(argv.contents, 'tjm.cluster')) {
+            argv.cluster = argv.contents.tjm.cluster;
+            return;
         }
-        clusterName = argv.c || argv.l;
-
         
-        // return the job Contents
-        // return the job path
+        argv.cluster = argv.l ? 'http://localhost:5678' : argv.c;
 
+        if(!argv.cluster) {
+            reply.fatal('Use -c to specify a cluster or use -l for localhost')
+        }
     }
 
-    function jobFileHandler(fileName, tjmCheck) {
-        let fName = fileName;
+    function jobFileHandler() {
+        let fName = argv.jobFile;
 
         if (!fName) {
             reply.fatal('Missing the file!');
@@ -44,14 +46,10 @@ module.exports = () => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
-        if (tjmCheck === true) {
-            _tjmDataCheck(jobContents);
-        }
+        if (argv.tjmCheck === true) _tjmDataCheck(jobContents);
 
-        return {
-            file_path: jobFilePath,
-            contents: jobContents
-        };
+        argv.file_path = jobFilePath;
+        argv.contents = jobContents;
     }
 
     function _tjmDataCheck(jsonData) {
@@ -61,19 +59,9 @@ module.exports = () => {
         return true;
     }
 
-    function getClusters(jsonData) {
-        if (_.has(jsonData, 'tjm.clusters')) {
-            return _.get(jsonData, 'tjm.clusters');
-        }
-        if (_.has(jsonData, 'tjm.clusters')) {
-            return _.castArray(_.get(jsonData, 'tjm.cluster'));
-        }
-        return [];
-    }
-
     return {
+        returnJobData,
         jobFileHandler,
-        _tjmDataCheck,
-        getClusters
+        _tjmDataCheck
     };
 };

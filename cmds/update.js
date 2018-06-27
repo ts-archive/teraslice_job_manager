@@ -15,15 +15,11 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testFunctions) => {
     const reply = require('./cmd_functions/reply')();
-    const jobData = require('./cmd_functions/json_data_functions')()
-        .jobFileHandler(argv.jobFile);
+    require('./cmd_functions/json_data_functions')(argv).returnJobData();
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobContents = jobData.contents;
-    const tjmFunctions = _testFunctions ||
-        require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
-
-    const jobId = jobContents.tjm.job_id;
-    const cluster = jobContents.tjm.cluster;
+    const jobId = argv.contents.tjm.job_id;
+    const cluster = argv.cluster;
 
     function restartJob() {
         return tjmFunctions.teraslice.jobs.wrap(jobId).status()
@@ -47,8 +43,8 @@ exports.handler = (argv, _testFunctions) => {
                 });
     }
 
-    return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.teraslice.cluster.put(`/jobs/${jobId}`, jobContents))
+    return tjmFunctions.alreadyRegisteredCheck()
+        .then(() => tjmFunctions.teraslice.cluster.put(`/jobs/${jobId}`, argv.contents))
         .then((updateResponse) => {
             if (_.isEmpty(updateResponse)) {
                 return Promise.reject(new Error ('Could not update job'));

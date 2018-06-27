@@ -11,15 +11,11 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testFunctions) => {
     const reply = require('./cmd_functions/reply')();
-    const jobData = require('./cmd_functions/json_data_functions')()
-        .jobFileHandler(argv.jobFile);
+    require('./cmd_functions/json_data_functions')(argv).returnJobData();
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobContents = jobData.contents;
-    const tjmFunctions = _testFunctions ||
-         require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
-    const jobId = jobContents.tjm.job_id;
-
-    return tjmFunctions.alreadyRegisteredCheck(jobContents)
+    const jobId = argv.contents.tjm.job_id;
+    return tjmFunctions.alreadyRegisteredCheck()
         .then(() => {
             if (argv.num <= 0 || _.isNaN(argv.num)) {
                 return Promise.reject(new Error('Number of workers must be a positive number greater'));

@@ -10,14 +10,10 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv) => {
     const reply = require('./cmd_functions/reply')();
-    const jobData = require('./cmd_functions/json_data_functions')()
-        .jobFileHandler(argv.jobFile, false);
+    require('./cmd_functions/json_data_functions')(argv).returnJobData(true);
 
-    const jobContents = jobData.contents;
-    const jobFilePath = jobData.file_path;
-
-    delete jobContents.tjm;
-    return fs.writeJson(jobFilePath, jobContents, { spaces: 4 })
+    delete argv.contents.tjm;
+    return fs.writeJson(argv.file_path, argv.contents, { spaces: 4 })
         .then(() => reply.green(`TJM data was removed from ${argv.jobFile}`))
         .catch(err => reply.fatal(err.message));
 };

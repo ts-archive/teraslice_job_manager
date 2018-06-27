@@ -35,19 +35,25 @@ exports.builder = (yargs) => {
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv, _testTjmFunctions) => {
-    const jsonData = require('./cmd_functions/json_data_functions')();
-    const fileData = jsonData.jobFileHandler('asset/asset.json', false);
-    const assetJson = fileData.contents;
-
+    let assetJson
+    try {
+        assetJson = require(path.join(process.cwd(), 'asset/asset.json'));
+    } 
+    catch (error) {
+        reply.fatal(error);
+    }
+    
     let clusters = [];
     if (argv.c) {
+        argv.cluster = argv.c;
         clusters.push(argv.c);
     }
     if (argv.l) {
+        argv.cluster = argv.l;
         clusters.push('http://localhost:5678');
     }
     if (_.isEmpty(clusters)) {
-        clusters = jsonData.getClusters(assetJson);
+        if (_.has(assetJson.tjm, 'clusters')) clusters = assetJson.tjm.clusters;
     }
     if (_.isEmpty(clusters)) {
         reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
