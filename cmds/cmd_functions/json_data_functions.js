@@ -29,8 +29,7 @@ module.exports = () => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
-        const tjmCheck = tjmCheck || true;
-        if (tjmCheck) {
+        if (tjmCheck === undefined) {
             _tjmDataCheck(jobContents);
         }
 

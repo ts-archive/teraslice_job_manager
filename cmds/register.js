@@ -25,11 +25,11 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const reply = require('./cmd_functions/reply')();
-    const jsonData = require('./cmd_functions/json_data_functions')();
+    const jobnData = require('./cmd_functions/json_data_functions')()
+        .jobFileHandler(argv.jobFile, false);
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
-    const jobData = jsonData.jobFileHandler(argv.jobFile, false);
-    const jobContents = jobData[1];
-    const jobFilePath = jobData[0];
+    const jobContents = jobData.contents;
+    const jobFilePath = jobData.file_path;
 
     return tjmFunctions.loadAsset()
         .then(() => {

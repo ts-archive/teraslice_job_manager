@@ -7,8 +7,10 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testFunctions) => {
     let reply = require('./cmd_functions/reply')();
-    const jsonData = require('./cmd_functions/json_data_functions')();
-    const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
+    const jobData = require('./cmd_functions/json_data_functions')()
+        .jobFileHandler(argv.jobFile);
+
+    const jobContents = jobData.contents;
     const jobId = jobContents.tjm.job_id;
     let tjmFunctions = _testFunctions ||
         require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
