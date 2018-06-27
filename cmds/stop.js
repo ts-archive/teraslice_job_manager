@@ -15,7 +15,7 @@ exports.handler = (argv, _testFunctions) => {
         require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
     const jobId = jobContents.tjm.job_id;
 
-    return tjmFunctions.alreadyRegisteredCheck(joContents)
+    return tjmFunctions.alreadyRegisteredCheck(jobContents)
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).stop())
         .then((stopResponse) => {
             if (!stopResponse.status.status === 'stopped') {

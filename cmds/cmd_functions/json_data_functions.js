@@ -5,6 +5,21 @@ const path = require('path');
 const reply = require('./reply')();
 
 module.exports = () => {
+    function returnJobData(argv) {
+        jobData = jobFileHandler(argv.fileName, argv.tjmCheck);
+        // return the cluster to work with
+        let clusterName;
+        if (_.has(jobData.tjm, 'cluster')) {
+            clusterName = jobData.tjm.cluser;
+        }
+        clusterName = argv.c || argv.l;
+
+        
+        // return the job Contents
+        // return the job path
+
+    }
+
     function jobFileHandler(fileName, tjmCheck) {
         let fName = fileName;
 
@@ -29,7 +44,7 @@ module.exports = () => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
-        if (tjmCheck === undefined) {
+        if (tjmCheck === true) {
             _tjmDataCheck(jobContents);
         }
 
@@ -37,7 +52,6 @@ module.exports = () => {
             file_path: jobFilePath,
             contents: jobContents
         };
-        // return [jobFilePath, jobContents];
     }
 
     function _tjmDataCheck(jsonData) {

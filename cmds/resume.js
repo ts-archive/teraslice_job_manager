@@ -7,6 +7,7 @@ exports.builder = (yargs) => {
 };
 exports.handler = (argv, _testFunctions) => {
     const reply = require('./cmd_functions/reply')();
+    argv.tjmCheck = true;
     const jobData = require('./cmd_functions/json_data_functions')()
         .jobFileHandler(argv.jobFile);
 

@@ -4,31 +4,23 @@ const fs = require('fs-extra');
 const path = require('path');
 
 describe('tests jsonDataFunctions', () => {
-    fit('job files do not have to end in json', () => {
+    it('job files do not have to end in json', () => {
         fs.writeFileSync(path.join(__dirname, '..', 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        let jobData = jobFileFunctions.jobFileHandler('tfile.prod.json');
+        let jobData = jobFileFunctions.jobFileHandler('tfile.prod.json', false);
         console.log('jobData', jobData);
-        expect((jobData.file_path).test).toBe('test');
+        expect(jobData.contents.test).toBe('test');
 
         jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        jobData = jobFileFunctions.jobFileHandler('tfile.prod');
-        expect((jobData.file_path).test).toBe('test');
+        jobData = jobFileFunctions.jobFileHandler('tfile.prod', false);
+        console.log('jobData', jobData);
+        expect(jobData.contents.test).toBe('test');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
 
     it('no job file throws error', () => {
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        expect(jobFileFunctions.jobFileHandler).toThrow('Missing the job file!');
-    });
-
-    it('path should change to asset/jsonFile if true as second function input', () => {
-        fs.emptyDirSync(path.join(__dirname, '..', 'asset'));
-        fs.writeFileSync(path.join(__dirname, '..', 'asset/assetTest.json'), JSON.stringify({ test: 'test' }));
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
-        const returnData = jobFileFunctions.jobFileHandler('assetTest.json', false, true);
-        expect(returnData[0]).toBe(path.join(__dirname, '..', 'asset/assetTest.json'));
-        expect(returnData[1].test).toBe('test');
+        expect(jobFileFunctions.jobFileHandler).toThrow('Missing the file!');
     });
 
     it('bad file path throws an error', () => {

@@ -37,7 +37,7 @@ exports.builder = (yargs) => {
 exports.handler = (argv, _testTjmFunctions) => {
     const jsonData = require('./cmd_functions/json_data_functions')();
     const fileData = jsonData.jobFileHandler('asset/asset.json', false);
-    const assetJson = filData.contents;
+    const assetJson = fileData.contents;
 
     let clusters = [];
     if (argv.c) {
