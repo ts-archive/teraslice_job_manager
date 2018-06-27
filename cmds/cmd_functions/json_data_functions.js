@@ -29,11 +29,16 @@ module.exports = () => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
+        const tjmCheck = tjmCheck || true;
         if (tjmCheck) {
             _tjmDataCheck(jobContents);
         }
 
-        return [jobFilePath, jobContents];
+        return {
+            file_path: jobFilePath,
+            contents: jobContents
+        };
+        // return [jobFilePath, jobContents];
     }
 
     function _tjmDataCheck(jsonData) {

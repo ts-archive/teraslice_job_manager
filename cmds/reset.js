@@ -11,7 +11,7 @@ exports.builder = (yargs) => {
 exports.handler = (argv) => {
     const reply = require('./cmd_functions/reply')();
     const jsonData = require('./cmd_functions/json_data_functions')();
-    const jobData = jsonData.jobFileHandler(argv.jobFile);
+    const jobData = jsonData.jobFileHandler(argv.jobFile, false);
     const jobContents = jobData[1];
     const jobFilePath = jobData[0];
 
