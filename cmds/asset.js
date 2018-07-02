@@ -105,9 +105,10 @@ exports.handler = (argv, _testTjmFunctions) => {
             })
             .then(() => fs.readFile(`${process.cwd()}/builds/processors.zip`))
             .then((zippedFileData) => {
-                function postAssets(cName) {
+                function postAssets(cluster) {
+                    console.log(cluster);
                     const teraslice = require('teraslice-client-js')({
-                        host: `${tjmFunctions.httpClusterNameCheck(cName)}`
+                        host: `${cluster}`
                     });
                     return teraslice.assets.post(zippedFileData);
                 }
@@ -122,7 +123,7 @@ exports.handler = (argv, _testTjmFunctions) => {
                             }
                         })
                         .catch((err) => {
-                            reply.fatal(err);
+                            reply.fatal(err.stack);
                         });
                 });
             })
