@@ -53,20 +53,7 @@ describe('tjmFunctions testing', () => {
 
     beforeEach(() => createNewAsset());
 
-    it('check that cluster name includes a port', () => {
-        tjmFunctions.__testContext(_teraslice);
-        expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
-        expect(() => tjmFunctions.httpClusterNameCheck('localhost')).toThrow('Cluster names need to include a port number');
-        expect(() => tjmFunctions.httpClusterNameCheck('http://localhost')).toThrow('Cluster names need to include a port number');
-    });
-
-    it('check that cluster name starts with http', () => {
-        expect(tjmFunctions.httpClusterNameCheck('localhost:5678')).toBe('http://localhost:5678');
-        expect(tjmFunctions.httpClusterNameCheck('http://localhost:5678')).toBe('http://localhost:5678');
-        expect(tjmFunctions.httpClusterNameCheck('https://localhost:5678')).toBe('https://localhost:5678');
-    });
-
-    it('alreadyRegisteredCheck should resolve if the job exists', () => {
+    it('alreadyRegisteredCheck should resolve if the job exists', (done) => {
         jobContents = {
             tjm: {
                 cluster: 'http://localhost:5678',
@@ -74,13 +61,21 @@ describe('tjmFunctions testing', () => {
             }
         };
 
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+        argv.cluster = 'clustername';
+
         someJobId = 'jobYouAreLookingFor';
 
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
-        return tjmFunctions.alreadyRegisteredCheck(jobContents);
+        tjmFunctions.alreadyRegisteredCheck()
+            .then(result => expect(result).toBe(true))
+            .catch(done.fail)
+            .finally(() => done());
     });
 
-    it('alreadyRegisteredCheck should reject if the job exists', () => {
+    it('alreadyRegisteredCheck should reject if the job exists', (done) => {
         someJobId = 'notTheJobYouAreLookingFor';
         jobContents = {
             tjm: {
@@ -88,24 +83,44 @@ describe('tjmFunctions testing', () => {
                 job_id: 'jobYouAreLookingFor'
             }
         };
+
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+        argv.cluster = 'clustername';
+
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
-        return tjmFunctions.alreadyRegisteredCheck(jobContents)
+        tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch((err) => {
                 expect(err.message).toEqual('Job is not on the cluster');
-            });
+            })
+            .finally(() => done());
     });
 
-    it('alreadyRegisteredCheck should reject if the job contents are empty', () => {
+    it('alreadyRegisteredCheck should reject if the job contents are empty', (done) => {
         jobContents = {};
+        const jobData = {
+            contents: jobContents,
+            file_path: 'someFilePath',
+            cluster: 'clustername'
+        }
+
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+
         someJobId = 'jobYouAreLookingFor';
-        return tjmFunctions.alreadyRegisteredCheck(jobContents)
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmFunctions.alreadyRegisteredCheck()
             .catch((err) => {
                 expect(err.message).toEqual('No cluster configuration for this job');
-            });
+            })
+            .finally(() => done());
     });
 
     it('meta data is being written to assets.json ', () => {
         argv.c = 'http://localhost:5678';
+        argv.cluster = argv.c;
+
         const tjmFuncs = require('../cmds/cmd_functions/functions')(argv);
         return createNewAsset()
             .then(() => tjmFuncs.__testFunctions()._updateAssetMetadata())
@@ -129,6 +144,8 @@ describe('tjmFunctions testing', () => {
         })
         .then(() => {
             argv.c = 'http://newCluster:5678';
+            argv.cluster = argv.c;
+
             tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
             return tjmFunctions.__testFunctions()._updateAssetMetadata();
         })
@@ -140,6 +157,8 @@ describe('tjmFunctions testing', () => {
 
     it('no asset.json throw error', () => {
         argv.c = 'http://localhost:5678';
+        argv.cluster = argv.c;
+
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         return fs.emptyDir(path.join(__dirname, '..', 'asset'))
             .then(() => {
@@ -156,6 +175,9 @@ describe('tjmFunctions testing', () => {
                 clusters: ['http://localhost:5678', 'http://newCluster:5678', 'http://anotherCluster:5678']
             }
         };
+
+        argv.cluster = argv.c;
+
         argv.c = 'http://localhost:5678';
         tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
 

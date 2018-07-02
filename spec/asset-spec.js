@@ -45,7 +45,7 @@ describe('asset command testing', () => {
             .then(() => asset.handler(argv, _tjmFunctions))
             .then((result) => {
                 expect(result).toEqual('deployed');
-            });
+            })
     });
 
     it('deploy should respond to a request error', () => {

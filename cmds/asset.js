@@ -35,30 +35,35 @@ exports.builder = (yargs) => {
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv, _testTjmFunctions) => {
-    const jsonData = require('./cmd_functions/json_data_functions')();
-    const fileData = jsonData.jobFileHandler('asset.json', true);
-    const assetJson = fileData[1];
-    // const assetJsonPath = fileData[0];
-
+    let assetJson
+    try {
+        assetJson = require(path.join(process.cwd(), 'asset/asset.json'));
+    } 
+    catch (error) {
+        reply.fatal(error);
+    }
+    
     let clusters = [];
     if (argv.c) {
+        argv.cluster = argv.c;
         clusters.push(argv.c);
     }
     if (argv.l) {
+        argv.cluster = 'http://localhost:5678';
         clusters.push('http://localhost:5678');
     }
     if (_.isEmpty(clusters)) {
-        clusters = jsonData.getClusters(assetJson);
+        if (_.has(assetJson.tjm, 'clusters')) clusters = assetJson.tjm.clusters;
     }
     if (_.isEmpty(clusters)) {
         reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
     }
-
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
 
-    function latestAssetVersion(cluster, assetName) {
+    function latestAssetVersion(cluster) {
+        const assetName = assetJson.name;
         const teraslice = require('teraslice-client-js')({
-            host: `${tjmFunctions.httpClusterNameCheck(cluster)}`
+            host: `${cluster}`
         });
         teraslice.cluster.txt(`assets/${assetName}`)
             .then((clientResponse) => {
@@ -123,8 +128,7 @@ exports.handler = (argv, _testTjmFunctions) => {
             })
             .catch(err => reply.fatal((err.message)));
     } else if (argv.cmd === 'status') {
-        const assetName = assetJson.name;
-        return Promise.each(cluster => latestAssetVersion(cluster, assetName));
+        clusters.forEach(cluster => latestAssetVersion(cluster))
+        
     }
-    return Promise.reject(new Error('unknown command'));
 };
