@@ -73,12 +73,10 @@ module.exports = (tjmObject) => {
         if (tjmObject.l) {
             tjmObject.cluster = 'http://localhost:5678';
         }
-        if (_.isEmpty(clusters)) {
-            if (_.has(tjmObject.asset_file_content, 'tjm.clusters')) {
+        if (!_.has(tjmObject, 'cluster') && _.has(tjmObject.asset_file_content, 'tjm.clusters')) {
                 tjmObject.clusters = tjmObject.asset_file_content.tjm.clusters
-            }
         }
-        if (_.isEmpty(clusters) && !_.has(tjmObject, 'cluster')) {
+        if (_.isEmpty(tjmObject.clusters) && !_.has(tjmObject, 'cluster')) {
             reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
         }
     }

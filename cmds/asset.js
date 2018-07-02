@@ -46,11 +46,10 @@ exports.handler = (argv, _testTjmFunctions) => {
     }
 
     dataChecks(tjmObject).getAssetClusters();
-
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(tjmObject);
 
     function latestAssetVersion(cluster) {
-        const assetName = assetJson.name;
+        const assetName = tjmObject.asset_file_content.name;
         const teraslice = require('teraslice-client-js')({
             host: `${cluster}`
         });
@@ -95,30 +94,29 @@ exports.handler = (argv, _testTjmFunctions) => {
             .then(() => fs.readFile(`${process.cwd()}/builds/processors.zip`))
             .then((zippedFileData) => {
                 function postAssets(cluster) {
-                    console.log(cluster);
                     const teraslice = require('teraslice-client-js')({
                         host: `${cluster}`
                     });
-                    return teraslice.assets.post(zippedFileData);
-                }
-                return clusters.forEach((cluster) => {
-                    postAssets(cluster)
+                    return teraslice.assets.post(zippedFileData)
                         .then((postResponse) => {
                             const postResponseJson = JSON.parse(postResponse);
                             if (postResponseJson.error) {
-                                reply.fatal(postResponseJson.error);
+                                reply.yellow(`for ${cluster}, ${postResponseJson.error}`);
                             } else {
                                 reply.green(`Asset posted to ${argv.c} with id ${postResponseJson._id}`);
                             }
-                        })
-                        .catch((err) => {
-                            reply.fatal(err.stack);
                         });
-                });
+                }
+                if(_.has(tjmObject, 'clusters')) {
+                    return tjmObject.clusters.forEach(cluster => postAssets(cluster));
+                }
+                return postAssets(tjmObject.cluster);
             })
             .catch(err => reply.fatal((err.message)));
     } else if (argv.cmd === 'status') {
-        clusters.forEach(cluster => latestAssetVersion(cluster))
-        
+        if(_.has(tjmObject, 'clusters')) {
+            return Promise.each(tjmObject.clusters, cluster => latestAssetVersion(cluster));
+        }
+        return latestAssetVersion(tjmObject.cluster);
     }
 };
