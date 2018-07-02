@@ -61,16 +61,13 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        const jobData = {
-            contents: jobContents,
-            file_path: 'someFilePath',
-            cluster: 'clustername',
-            argv
-        }
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+        argv.cluster = 'clustername';
 
         someJobId = 'jobYouAreLookingFor';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(jobData);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
         tjmFunctions.alreadyRegisteredCheck()
             .then(result => expect(result).toBe(true))
@@ -83,18 +80,15 @@ describe('tjmFunctions testing', () => {
         jobContents = {
             tjm: {
                 cluster: 'http://localhost:5678',
-                job_id: 'jobYouAreLookingFor',
-                argv
+                job_id: 'jobYouAreLookingFor'
             }
         };
 
-        const jobData = {
-            contents: jobContents,
-            file_path: 'someFilePath',
-            cluster: 'clustername'
-        }
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+        argv.cluster = 'clustername';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(jobData);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.__testContext(_teraslice);
         tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch((err) => {
@@ -108,12 +102,14 @@ describe('tjmFunctions testing', () => {
         const jobData = {
             contents: jobContents,
             file_path: 'someFilePath',
-            cluster: 'clustername',
-            argv
+            cluster: 'clustername'
         }
 
+        argv.job_file_content = jobContents;
+        argv.job_file_path = 'someFilePath';
+
         someJobId = 'jobYouAreLookingFor';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(jobData);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
         tjmFunctions.alreadyRegisteredCheck()
             .catch((err) => {
                 expect(err.message).toEqual('No cluster configuration for this job');

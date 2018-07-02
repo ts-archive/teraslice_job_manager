@@ -1,6 +1,6 @@
 'use strict';
 
-exports.command = 'pause <jobFile>';
+exports.command = 'pause <job_file>';
 exports.desc = 'pauses job on the specified cluster\n';
 exports.builder = (yargs) => {
     yargs.example('tjm pause jobfile.prod');
@@ -11,7 +11,7 @@ exports.handler = (argv, _testFunctions) => {
     // teraslice client functions or test functions
     const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobId = argv.contents.tjm.job_id;
+    const jobId = argv.job_file_content.tjm.job_id;
     const cluster = argv.cluster;
 
     return tjmFunctions.alreadyRegisteredCheck()

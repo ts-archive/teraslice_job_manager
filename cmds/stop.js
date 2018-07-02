@@ -1,6 +1,6 @@
 'use strict';
 
-exports.command = 'stop <jobFile>';
+exports.command = 'stop <job_file>';
 exports.desc = 'stops job on the cluster in the job file\n';
 exports.builder = (yargs) => {
     yargs.example('tjm stop jobfile.prod.json');
@@ -10,7 +10,7 @@ exports.handler = (argv, _testFunctions) => {
     require('./cmd_functions/json_data_functions')(argv).returnJobData();
     const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobId = argv.contents.tjm.job_id;
+    const jobId = argv.job_file_content.tjm.job_id;
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).stop())
         .then((stopResponse) => {

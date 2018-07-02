@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-exports.command = 'update [jobFile]';
+exports.command = 'update [job_file]';
 exports.desc = 'Updates the job on the cluster listed in the job file\nUse -r to run or restart the job after the update\n';
 exports.builder = (yargs) => {
     yargs
@@ -18,7 +18,7 @@ exports.handler = (argv, _testFunctions) => {
     require('./cmd_functions/json_data_functions')(argv).returnJobData();
     const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobId = argv.contents.tjm.job_id;
+    const jobId = argv.job_file_content.tjm.job_id;
     const cluster = argv.cluster;
 
     function restartJob() {
@@ -44,7 +44,7 @@ exports.handler = (argv, _testFunctions) => {
     }
 
     return tjmFunctions.alreadyRegisteredCheck()
-        .then(() => tjmFunctions.teraslice.cluster.put(`/jobs/${jobId}`, argv.contents))
+        .then(() => tjmFunctions.teraslice.cluster.put(`/jobs/${jobId}`, argv.job_file_content))
         .then((updateResponse) => {
             if (_.isEmpty(updateResponse)) {
                 return Promise.reject(new Error ('Could not update job'));

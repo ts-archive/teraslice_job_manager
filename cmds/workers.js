@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-exports.command = 'workers <param> <num> <jobFile>';
+exports.command = 'workers <param> <num> <job_file>';
 exports.desc = 'add or remove workers to a job';
 exports.builder = (yargs) => {
     yargs
@@ -14,7 +14,7 @@ exports.handler = (argv, _testFunctions) => {
     require('./cmd_functions/json_data_functions')(argv).returnJobData();
     const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobId = argv.contents.tjm.job_id;
+    const jobId = argv.job_file_content.tjm.job_id;
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => {
             if (argv.num <= 0 || _.isNaN(argv.num)) {

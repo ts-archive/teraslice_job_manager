@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 
-exports.command = 'register [jobFile]';
+exports.command = 'register [job_file]';
 exports.desc = 'Registers job with a cluster.  Specify the cluster with -c.\nAdds metadata to job file on completion\n';
 exports.builder = (yargs) => {
     yargs
@@ -27,8 +27,8 @@ exports.handler = (argv, _testTjmFunctions) => {
     const reply = require('./cmd_functions/reply')();
     require('./cmd_functions/json_data_functions')(argv).returnJobData(true);
     const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
-    const jobContents = argv.contents;
-    const jobFilePath = argv.file_path;
+    const jobContents = argv.job_file_content;
+    const jobFilePath = argv.job_file_path;
 
     return tjmFunctions.loadAsset()
         .then(() => {

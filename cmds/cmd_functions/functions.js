@@ -13,7 +13,7 @@ module.exports = (argv) => {
     });
 
     function alreadyRegisteredCheck() {
-        const jobContents = argv.contents;
+        const jobContents = argv.job_file_content;
         if (_.has(jobContents, 'tjm.cluster')) {
             return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
                 .then((jobSpec) => {
@@ -101,15 +101,15 @@ module.exports = (argv) => {
             throw new Error(`Could not load asset.json: ${err.message}`);
         }
 
-        const c = argv.l ? 'http://localhost:5678' : argv.c;
+        const cluster = argv.l ? 'http://localhost:5678' : argv.c;
         if (_.has(assetJson, 'tjm.clusters')) {
-            if (_.indexOf(assetJson.tjm.clusters, c) >= 0) {
-                throw new Error(`Assets have already been deployed to ${c}, use update`);
+            if (_.indexOf(assetJson.tjm.clusters, cluster) >= 0) {
+                throw new Error(`Assets have already been deployed to ${cluster}, use update`);
             }
-            assetJson.tjm.clusters.push(c);
+            assetJson.tjm.clusters.push(cluster);
             return assetJson;
         }
-        _.set(assetJson, 'tjm.clusters', [c]);
+        _.set(assetJson, 'tjm.clusters', [cluster]);
         return assetJson;
     }
 

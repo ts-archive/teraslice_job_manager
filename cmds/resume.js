@@ -1,6 +1,6 @@
 'use strict';
 
-exports.command = 'resume <jobFile>';
+exports.command = 'resume <job_file>';
 exports.desc = 'resumes a paused job\n';
 exports.builder = (yargs) => {
     yargs.example('tjm resume jobfile.prod');
@@ -11,7 +11,7 @@ exports.handler = (argv, _testFunctions) => {
     require('./cmd_functions/json_data_functions')(argv).returnJobData();
     const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
 
-    const jobId = argv.contents.tjm.job_id;
+    const jobId = argv.job_file_content.tjm.job_id;
     const cluster = argv.cluster;
 
     return tjmFunctions.alreadyRegisteredCheck()

@@ -15,29 +15,29 @@ describe('jsonDataFunctions', () => {
         );
 
         const argv = {
-            jobFile: 'tfile.prod.json',
-            tjmCheck: false
+            job_file: 'tfile.prod.json',
+            tjm_check: false
         }
 
         let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
         let jobData = jobFileFunctions.jobFileHandler();
-        expect(argv.contents.test).toBe('test');
+        expect(argv.job_file_content.test).toBe('test');
 
         jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
         jobData = jobFileFunctions.jobFileHandler();
-        expect(argv.contents.test).toBe('test');
+        expect(argv.job_file_content.test).toBe('test');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
 
     it('missing job file throws error', () => {
         const argv = {};
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
-        expect(jobFileFunctions.jobFileHandler).toThrow('Missing the file!');
+        expect(jobFileFunctions.jobFileHandler).toThrow('Missing the job file!');
     });
 
     it('bad file path throws an error', () => {
         const argv = {
-            jobFile: 'jobTest.json'
+            job_file: 'jobTest.json'
         };
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
         expect(jobFileFunctions.jobFileHandler)
@@ -55,7 +55,7 @@ describe('jsonDataFunctions', () => {
             );
 
         const argv = {
-            jobFile: 'testFile.json'
+            job_file: 'testFile.json'
         }
 
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
@@ -103,7 +103,7 @@ describe('jsonDataFunctions', () => {
         );
 
         const argv = {
-            jobFile: 'tfile.prod.json',
+            job_file: 'tfile.prod.json',
             l: true
         };
 
@@ -128,8 +128,8 @@ describe('jsonDataFunctions', () => {
         );
 
         const argv = {
-            jobFile: 'fakeFile.json',
-            tjmCheck: true
+            job_file: 'fakeFile.json',
+            tjm_check: true
         };
 
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
@@ -148,13 +148,13 @@ describe('jsonDataFunctions', () => {
         );
 
         const argv = {
-            jobFile: 'fakeFile2.json',
-            c: 'someJobName'
+            job_file: 'fakeFile2.json',
+            c: 'someClusterName'
         };
 
         const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
         const jobData = jobFileFunctions.returnJobData(true);
-        expect(argv.cluster).toBe('someJobName');
+        expect(argv.cluster).toBe('someClusterName');
         fs.unlinkSync(path.join(__dirname, '..', 'fakeFile2.json'));
     });
 });
