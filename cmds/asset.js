@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const Promise = require('bluebird');
 const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
 
 
 exports.command = 'asset <cmd>';
@@ -35,30 +36,18 @@ exports.builder = (yargs) => {
         .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
 };
 exports.handler = (argv, _testTjmFunctions) => {
-    let assetJson
+    const tjmObject = _.clone(argv);
+
     try {
-        assetJson = require(path.join(process.cwd(), 'asset/asset.json'));
+        tjmObject.asset_file_content = require(path.join(process.cwd(), 'asset/asset.json'));
     } 
     catch (error) {
         reply.fatal(error);
     }
-    
-    let clusters = [];
-    if (argv.c) {
-        argv.cluster = argv.c;
-        clusters.push(argv.c);
-    }
-    if (argv.l) {
-        argv.cluster = 'http://localhost:5678';
-        clusters.push('http://localhost:5678');
-    }
-    if (_.isEmpty(clusters)) {
-        if (_.has(assetJson.tjm, 'clusters')) clusters = assetJson.tjm.clusters;
-    }
-    if (_.isEmpty(clusters)) {
-        reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
-    }
-    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(argv);
+
+    dataChecks(tjmObject).getAssetClusters();
+
+    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(tjmObject);
 
     function latestAssetVersion(cluster) {
         const assetName = assetJson.name;
@@ -91,7 +80,7 @@ exports.handler = (argv, _testTjmFunctions) => {
         return tjmFunctions.loadAsset()
             .catch((err) => {
                 if (err.name === 'RequestError') {
-                    reply.fatal(`Could not connect to ${argv.c}`);
+                    reply.fatal(`Could not connect to ${tjmObject.cluster}`);
                     return;
                 }
                 reply.fatal(err);
