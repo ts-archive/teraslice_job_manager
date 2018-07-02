@@ -6,8 +6,8 @@ const reply = require('./reply')();
 
 module.exports = (argv) => {
     function returnJobData(noTjmCheck) {
-        // some commands should note have tjm data and should not check for it
-        argv.tjmCheck = noTjmCheck ? false : true;
+        // some commands should not have tjm data, otherwise file is checked for tjm data
+        argv.tjmCheck = !noTjmCheck;
         jobFileHandler();
         // return the cluster to work with
         if (_.has(argv.contents, 'tjm.cluster')) {
