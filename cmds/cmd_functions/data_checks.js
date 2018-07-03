@@ -7,24 +7,24 @@ const reply = require('./reply')();
 module.exports = (tjmObject) => {
     function returnJobData(noTjmCheck) {
         // some commands should not have tjm data, otherwise file is checked for tjm data
-        argv.tjm_check = !noTjmCheck;
-        // add job data to the argv object for easy reference
+        tjmObject.tjm_check = !noTjmCheck;
+        // add job data to the tjmObject object for easy reference
         jobFileHandler();
         // explicitly state the cluster that the code will reference for the job
-        if (_.has(argv.job_file_content, 'tjm.cluster')) {
-            argv.cluster = argv.job_file_content.tjm.cluster;
+        if (_.has(tjmObject.job_file_content, 'tjm.cluster')) {
+            tjmObject.cluster = tjmObject.job_file_content.tjm.cluster;
             return;
         }
         
-        argv.cluster = argv.l ? 'http://localhost:5678' : argv.c;
+        tjmObject.cluster = tjmObject.l ? 'http://localhost:5678' : tjmObject.c;
 
-        if(!argv.cluster) {
+        if(!tjmObject.cluster) {
             reply.fatal('Use -c to specify a cluster or use -l for localhost')
         }
     }
 
     function jobFileHandler() {
-        let fName = argv.job_file;
+        let fName = tjmObject.job_file;
 
         if (!fName) {
             reply.fatal('Missing the job file!');
@@ -47,10 +47,10 @@ module.exports = (tjmObject) => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
-        if (argv.tjm_check === true) _tjmDataCheck(jobContents);
+        if (tjmObject.tjm_check === true) _tjmDataCheck(jobContents);
 
-        argv.job_file_path = jobFilePath;
-        argv.job_file_content = jobContents;
+        tjmObject.job_file_path = jobFilePath;
+        tjmObject.job_file_content = jobContents;
     }
 
     function _tjmDataCheck(jsonData) {

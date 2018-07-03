@@ -1,18 +1,21 @@
 'use strict';
 
+const _ = require('lodash');
+const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
+
 exports.command = 'resume <job_file>';
 exports.desc = 'resumes a paused job\n';
 exports.builder = (yargs) => {
     yargs.example('tjm resume jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    const reply = require('./cmd_functions/reply')();
-    // ensure that tjm data is in job file
-    require('./cmd_functions/json_data_functions')(argv).returnJobData();
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData();
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
 
-    const jobId = argv.job_file_content.tjm.job_id;
-    const cluster = argv.cluster;
+    const jobId = tjmObject.job_file_content.tjm.job_id;
+    const cluster = tjmObject.cluster;
 
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())

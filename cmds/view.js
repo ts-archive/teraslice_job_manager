@@ -1,20 +1,24 @@
 'use strict';
 
+const _ = require('lodash');
+let reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
+
 exports.command = 'view [job_file]';
 exports.desc = 'Displays the job file as saved on the cluster specified in the tjm data';
 exports.builder = (yargs) => {
     yargs.example('tjm view jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    let reply = require('./cmd_functions/reply')();
-    require('./cmd_functions/json_data_functions')(argv).returnJobData();
-    let tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData();
+    let tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
 
-    const jobId = argv.job_file_content.tjm.job_id;
+    const jobId = tjmObject.job_file_content.tjm.job_id;
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).spec())
         .then(jobSpec => {
-            reply.yellow(`Current Job File on Cluster ${argv.cluster}:`);
+            reply.yellow(`Current Job File on Cluster ${tjmObject.cluster}:`);
             reply.green(JSON.stringify(jobSpec, null, 4));
             return jobSpec;
         })

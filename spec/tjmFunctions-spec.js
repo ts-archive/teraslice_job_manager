@@ -2,8 +2,8 @@
 
 const fs = require('fs-extra');
 
-const argv = {};
-let tjmFunctions = require('../cmds/cmd_functions/functions')(argv, 'localhost:5678');
+const tjmObject = {};
+let tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject, 'localhost:5678');
 const Promise = require('bluebird');
 const path = require('path');
 
@@ -61,13 +61,13 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        argv.job_file_content = jobContents;
-        argv.job_file_path = 'someFilePath';
-        argv.cluster = 'clustername';
+        tjmObject.job_file_content = jobContents;
+        tjmObject.job_file_path = 'someFilePath';
+        tjmObject.cluster = 'clustername';
 
         someJobId = 'jobYouAreLookingFor';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
         tjmFunctions.__testContext(_teraslice);
         tjmFunctions.alreadyRegisteredCheck()
             .then(result => expect(result).toBe(true))
@@ -84,11 +84,11 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        argv.job_file_content = jobContents;
-        argv.job_file_path = 'someFilePath';
-        argv.cluster = 'clustername';
+        tjmObject.job_file_content = jobContents;
+        tjmObject.job_file_path = 'someFilePath';
+        tjmObject.cluster = 'clustername';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
         tjmFunctions.__testContext(_teraslice);
         tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch((err) => {
@@ -105,11 +105,11 @@ describe('tjmFunctions testing', () => {
             cluster: 'clustername'
         }
 
-        argv.job_file_content = jobContents;
-        argv.job_file_path = 'someFilePath';
+        tjmObject.job_file_content = jobContents;
+        tjmObject.job_file_path = 'someFilePath';
 
         someJobId = 'jobYouAreLookingFor';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
         tjmFunctions.alreadyRegisteredCheck()
             .catch((err) => {
                 expect(err.message).toEqual('No cluster configuration for this job');
@@ -118,10 +118,10 @@ describe('tjmFunctions testing', () => {
     });
 
     it('meta data is being written to assets.json ', () => {
-        argv.c = 'http://localhost:5678';
-        argv.cluster = argv.c;
+        tjmObject.c = 'http://localhost:5678';
+        tjmObject.cluster = tjmObject.c;
 
-        const tjmFuncs = require('../cmds/cmd_functions/functions')(argv);
+        const tjmFuncs = require('../cmds/cmd_functions/functions')(tjmObject);
         return createNewAsset()
             .then(() => tjmFuncs.__testFunctions()._updateAssetMetadata())
             .then((jsonResult) => {
@@ -143,10 +143,10 @@ describe('tjmFunctions testing', () => {
             return fs.writeFile(path.join(__dirname, '..', 'asset/asset.json'), JSON.stringify(assetJson, null, 4));
         })
         .then(() => {
-            argv.c = 'http://newCluster:5678';
-            argv.cluster = argv.c;
+            tjmObject.c = 'http://newCluster:5678';
+            tjmObject.cluster = tjmObject.c;
 
-            tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+            tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
             return tjmFunctions.__testFunctions()._updateAssetMetadata();
         })
         .then((jsonResult) => {
@@ -156,10 +156,10 @@ describe('tjmFunctions testing', () => {
         }));
 
     it('no asset.json throw error', () => {
-        argv.c = 'http://localhost:5678';
-        argv.cluster = argv.c;
+        tjmObject.c = 'http://localhost:5678';
+        tjmObject.cluster = tjmObject.c;
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
         return fs.emptyDir(path.join(__dirname, '..', 'asset'))
             .then(() => {
                 expect(tjmFunctions.__testFunctions()._updateAssetMetadata).toThrowError();
@@ -176,10 +176,10 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        argv.cluster = argv.c;
+        tjmObject.cluster = tjmObject.c;
 
-        argv.c = 'http://localhost:5678';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmObject.c = 'http://localhost:5678';
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
 
         return fs.writeJson(path.join(__dirname, '..', 'asset/asset.json'), assetJson, { spaces: 4 })
             .then(() => expect(tjmFunctions.__testFunctions()._updateAssetMetadata).toThrowError('Assets have already been deployed to http://localhost:5678, use update'));
@@ -227,9 +227,9 @@ describe('tjmFunctions testing', () => {
 
     xit('load asset removes build, adds metadata to asset, zips asset, posts to cluster', () => {
         assetObject = JSON.stringify({ success: 'this worked', _id: '1235fakejob' });
-        argv.c = 'localhost:5678';
-        argv.a = true;
-        tjmFunctions = require('../cmds/cmd_functions/functions')(argv);
+        tjmObject.c = 'localhost:5678';
+        tjmObject.a = true;
+        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmObject);
         tjmFunctions.__testContext(_teraslice);
 
         const assetJson = {

@@ -3,7 +3,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 
-describe('jsonDataFunctions', () => {
+describe('checks to for job and asset file content', () => {
     it('job files do not have to end in json', () => {
         fs.writeFileSync(
             path.join(
@@ -14,32 +14,32 @@ describe('jsonDataFunctions', () => {
             JSON.stringify({ test: 'test' })
         );
 
-        const argv = {
+        const tjmObject = {
             job_file: 'tfile.prod.json',
             tjm_check: false
         }
 
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        let jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         let jobData = jobFileFunctions.jobFileHandler();
-        expect(argv.job_file_content.test).toBe('test');
+        expect(tjmObject.job_file_content.test).toBe('test');
 
-        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         jobData = jobFileFunctions.jobFileHandler();
-        expect(argv.job_file_content.test).toBe('test');
+        expect(tjmObject.job_file_content.test).toBe('test');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
 
     it('missing job file throws error', () => {
-        const argv = {};
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const tjmObject = {};
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         expect(jobFileFunctions.jobFileHandler).toThrow('Missing the job file!');
     });
 
     it('bad file path throws an error', () => {
-        const argv = {
+        const tjmObject = {
             job_file: 'jobTest.json'
         };
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         expect(jobFileFunctions.jobFileHandler)
             .toThrow('Sorry, can\'t find the JSON file: jobTest.json');
     });
@@ -54,11 +54,11 @@ describe('jsonDataFunctions', () => {
             JSON.stringify({ })
             );
 
-        const argv = {
+        const tjmObject = {
             job_file: 'testFile.json'
         }
 
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         expect(jobFileFunctions.jobFileHandler)
             .toThrow('JSON file contents cannot be empty');
         fs.unlinkSync(path.join(__dirname, '..', 'testFile.json'));
@@ -76,9 +76,9 @@ describe('jsonDataFunctions', () => {
             clusters: ['http://localhost', 'http://cluster2']
         };
 
-        const argv = {};
+        const tjmObject = {};
 
-        let jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        let jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         expect(jobFileFunctions._tjmDataCheck(jsonFileData)).toBe(true);
         delete jsonFileData.tjm;
 
@@ -90,7 +90,7 @@ describe('jsonDataFunctions', () => {
 
         // test no metadata
         delete jsonFileData.tjm;
-        jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')();
+        jobFileFunctions = require('../cmds/cmd_functions/data_checks')();
         expect(jobFileFunctions._tjmDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
     });
 
@@ -102,15 +102,15 @@ describe('jsonDataFunctions', () => {
             JSON.stringify({ test: 'test' })
         );
 
-        const argv = {
+        const tjmObject = {
             job_file: 'tfile.prod.json',
             l: true
         };
 
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
 
         const jobData = jobFileFunctions.returnJobData(true);
-        expect(argv.cluster).toBe('http://localhost:5678');
+        expect(tjmObject.cluster).toBe('http://localhost:5678');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
 
@@ -127,14 +127,14 @@ describe('jsonDataFunctions', () => {
             })
         );
 
-        const argv = {
+        const tjmObject = {
             job_file: 'fakeFile.json',
             tjm_check: true
         };
 
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         const jobData = jobFileFunctions.returnJobData();
-        expect(argv.cluster).toBe('aclustername');
+        expect(tjmObject.cluster).toBe('aclustername');
         fs.unlinkSync(path.join(__dirname, '..', 'fakeFile.json'));
     });
 
@@ -147,14 +147,14 @@ describe('jsonDataFunctions', () => {
             })
         );
 
-        const argv = {
+        const tjmObject = {
             job_file: 'fakeFile2.json',
             c: 'someClusterName'
         };
 
-        const jobFileFunctions = require('../cmds/cmd_functions/json_data_functions')(argv);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmObject);
         const jobData = jobFileFunctions.returnJobData(true);
-        expect(argv.cluster).toBe('someClusterName');
+        expect(tjmObject.cluster).toBe('someClusterName');
         fs.unlinkSync(path.join(__dirname, '..', 'fakeFile2.json'));
     });
 });

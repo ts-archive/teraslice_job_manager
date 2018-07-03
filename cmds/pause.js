@@ -1,18 +1,23 @@
 'use strict';
 
+
+const _ = require('lodash');
+const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
+
 exports.command = 'pause <job_file>';
 exports.desc = 'pauses job on the specified cluster\n';
 exports.builder = (yargs) => {
     yargs.example('tjm pause jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    const reply = require('./cmd_functions/reply')();
-    require('./cmd_functions/json_data_functions')(argv).returnJobData()
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData();
     // teraslice client functions or test functions
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv);
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
 
-    const jobId = argv.job_file_content.tjm.job_id;
-    const cluster = argv.cluster;
+    const jobId = tjmObject.job_file_content.tjm.job_id;
+    const cluster = tjmObject.cluster;
 
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())

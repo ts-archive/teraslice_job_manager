@@ -80,7 +80,6 @@ exports.handler = (argv, _testTjmFunctions) => {
             .catch((err) => {
                 if (err.name === 'RequestError') {
                     reply.fatal(`Could not connect to ${tjmObject.cluster}`);
-                    return;
                 }
                 reply.fatal(err);
             });

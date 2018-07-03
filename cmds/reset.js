@@ -1,5 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
+const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
+
 // removes tjm data from json file
 const fs = require('fs-extra');
 
@@ -9,11 +13,10 @@ exports.builder = (yargs) => {
     yargs.example('tjm reset jobfile.prod');
 };
 exports.handler = (argv) => {
-    const reply = require('./cmd_functions/reply')();
-    require('./cmd_functions/json_data_functions')(argv).returnJobData(true);
-
-    delete argv.job_file_content.tjm;
-    return fs.writeJson(argv.job_file_path, argv.job_file_content, { spaces: 4 })
-        .then(() => reply.green(`TJM data was removed from ${argv.job_file}`))
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData(true);
+    delete tjmObject.job_file_content.tjm;
+    return fs.writeJson(tjmObject.job_file_path, tjmObject.job_file_content, { spaces: 4 })
+        .then(() => reply.green(`TJM data was removed from ${tjmObject.job_file}`))
         .catch(err => reply.fatal(err.message));
 };
