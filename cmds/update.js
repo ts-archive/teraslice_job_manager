@@ -1,8 +1,10 @@
 'use strict';
 
 const _ = require('lodash');
+const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
 
-exports.command = 'update [jobFile]';
+exports.command = 'update [job_file]';
 exports.desc = 'Updates the job on the cluster listed in the job file\nUse -r to run or restart the job after the update\n';
 exports.builder = (yargs) => {
     yargs
@@ -14,13 +16,12 @@ exports.builder = (yargs) => {
         .example('tjm update jobfile.prod.json -r');
 };
 exports.handler = (argv, _testFunctions) => {
-    const reply = require('./cmd_functions/reply')();
-    const jsonData = require('./cmd_functions/json_data_functions')();
-    const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
-    jsonData.metaDataCheck(jobContents);
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
-    const jobId = jobContents.tjm.job_id;
-    const cluster = jobContents.tjm.cluster;
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData();
+    
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
+    const jobId = tjmObject.job_file_content.tjm.job_id;
+    const cluster = tjmObject.cluster;
 
     function restartJob() {
         return tjmFunctions.terasliceClient.jobs.wrap(jobId).status()
@@ -44,8 +45,8 @@ exports.handler = (argv, _testFunctions) => {
                 });
     }
 
-    return tjmFunctions.alreadyRegisteredCheck(jobContents)
-        .then(() => tjmFunctions.terasliceClient.cluster.put(`/jobs/${jobId}`, jobContents))
+    return tjmFunctions.alreadyRegisteredCheck()
+        .then(() => tjmFunctions.terasliceClient.cluster.put(`/jobs/${jobId}`, tjmObject.job_file_content))
         .then((updateResponse) => {
             if (_.isEmpty(updateResponse)) {
                 return Promise.reject(new Error ('Could not update job'));
@@ -55,7 +56,7 @@ exports.handler = (argv, _testFunctions) => {
             return Promise.resolve();
         })
         .then(() => {
-            if (!argv.r) {
+            if (!tjmObject.r) {
                 return Promise.resolve();
             }
             return restartJob();

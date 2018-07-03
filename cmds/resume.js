@@ -1,20 +1,23 @@
 'use strict';
 
-exports.command = 'resume <jobFile>';
+const _ = require('lodash');
+const reply = require('./cmd_functions/reply')();
+const dataChecks = require('./cmd_functions/data_checks');
+
+exports.command = 'resume <job_file>';
 exports.desc = 'resumes a paused job\n';
 exports.builder = (yargs) => {
     yargs.example('tjm resume jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    const reply = require('./cmd_functions/reply')();
-    const jsonData = require('./cmd_functions/json_data_functions')();
-    const jobContents = jsonData.jobFileHandler(argv.jobFile)[1];
-    jsonData.metaDataCheck(jobContents);
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(argv, jobContents.tjm.cluster);
-    const jobId = jobContents.tjm.job_id;
-    const cluster = jobContents.tjm.cluster;
+    const tjmObject = _.clone(argv);
+    dataChecks(tjmObject).returnJobData();
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
 
-    return tjmFunctions.alreadyRegisteredCheck(jobContents)
+    const jobId = tjmObject.job_file_content.tjm.job_id;
+    const cluster = tjmObject.cluster;
+
+    return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.terasliceClient.jobs.wrap(jobId).status())
         .then((status) => {
             if (status !== 'paused') {
