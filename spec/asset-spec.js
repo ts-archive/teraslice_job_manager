@@ -14,7 +14,7 @@ const assetJson = {
     description: 'dummy asset.json for testing'
 };
 
-const assetPath = path.join(__dirname, '..', 'asset/asset.json');
+const assetPath = path.join(__dirname, '..', 'asset/assetTest.json');
 
 const _tjmFunctions = {
     loadAsset: () => {
@@ -30,24 +30,25 @@ const _tjmFunctions = {
 };
 
 describe('asset command testing', () => {
-
     beforeEach(() => {
         deployError = null;
         deployMessage = 'default deployed message';
     });
     let argv = {};
 
-    it('deploy triggers load asset', () => {
+    it('deploy triggers load asset', (done) => {
         argv.c = 'localhost:5678';
         argv.cmd = 'deploy';
         deployMessage = 'deployed';
 
-        return fs.ensureFile(assetPath)
+        return Promise.resolve()
+            .then(() => fs.ensureFile(assetPath))
             .then(() => fs.writeJson(assetPath, assetJson, { spaces: 4 }))
             .then(() => asset.handler(argv, _tjmFunctions))
-            .then((result) => {
-                expect(result).toEqual('deployed');
-            })
+            .then((result) => expect(result).toEqual('deployed'))
+            .then(() => fs.remove(assetPath))
+            .catch(done.fail)
+            .finally(() => done()); 
     });
 
     it('deploy should respond to a request error', () => {

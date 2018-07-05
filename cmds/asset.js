@@ -38,8 +38,12 @@ exports.builder = (yargs) => {
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmObject = _.clone(argv);
 
+    // to avoid testing collision rename the asset when testing
+    let assetPath = 'asset/asset.json';
+    if (_testTjmFunctions) assetPath = 'asset/assetTest.json';
+
     try {
-        tjmObject.asset_file_content = require(path.join(process.cwd(), 'asset/asset.json'));
+        tjmObject.asset_file_content = require(path.join(process.cwd(), assetPath));
     } 
     catch (error) {
         reply.fatal(error);

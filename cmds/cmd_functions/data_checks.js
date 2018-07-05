@@ -16,7 +16,7 @@ module.exports = (tjmObject) => {
             return;
         }
         
-        tjmObject.cluster = tjmObject.l ? 'http://localhost:5678' : tjmObject.c;
+        tjmObject.cluster = tjmObject.l ? 'http://localhost:5678' : _urlCheck(tjmObject.c);
 
         if(!tjmObject.cluster) {
             reply.fatal('Use -c to specify a cluster or use -l for localhost')
