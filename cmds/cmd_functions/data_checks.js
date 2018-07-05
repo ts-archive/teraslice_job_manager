@@ -4,27 +4,27 @@ const _ = require('lodash');
 const path = require('path');
 const reply = require('./reply')();
 
-module.exports = (tjmObject) => {
+module.exports = (tjmConfig) => {
     function returnJobData(noTjmCheck) {
         // some commands should not have tjm data, otherwise file is checked for tjm data
-        tjmObject.tjm_check = !noTjmCheck;
-        // add job data to the tjmObject object for easy reference
+        tjmConfig.tjm_check = !noTjmCheck;
+        // add job data to the tjmConfig object for easy reference
         jobFileHandler();
         // explicitly state the cluster that the code will reference for the job
-        if (_.has(tjmObject.job_file_content, 'tjm.cluster')) {
-            tjmObject.cluster = tjmObject.job_file_content.tjm.cluster;
+        if (_.has(tjmConfig.job_file_content, 'tjm.cluster')) {
+            tjmConfig.cluster = tjmConfig.job_file_content.tjm.cluster;
             return;
         }
         
-        tjmObject.cluster = tjmObject.l ? 'http://localhost:5678' : _urlCheck(tjmObject.c);
+        tjmConfig.cluster = tjmConfig.l ? 'http://localhost:5678' : _urlCheck(tjmConfig.c);
 
-        if(!tjmObject.cluster) {
+        if(!tjmConfig.cluster) {
             reply.fatal('Use -c to specify a cluster or use -l for localhost')
         }
     }
 
     function jobFileHandler() {
-        let fName = tjmObject.job_file;
+        let fName = tjmConfig.job_file;
 
         if (!fName) {
             reply.fatal('Missing the job file!');
@@ -47,10 +47,10 @@ module.exports = (tjmObject) => {
             reply.fatal('JSON file contents cannot be empty');
         }
 
-        if (tjmObject.tjm_check === true) _tjmDataCheck(jobContents);
+        if (tjmConfig.tjm_check === true) _tjmDataCheck(jobContents);
 
-        tjmObject.job_file_path = jobFilePath;
-        tjmObject.job_file_content = jobContents;
+        tjmConfig.job_file_path = jobFilePath;
+        tjmConfig.job_file_content = jobContents;
     }
 
     function _tjmDataCheck(jsonData) {
@@ -66,17 +66,17 @@ module.exports = (tjmObject) => {
     }
 
     function getAssetClusters() {
-        if (tjmObject.c) {
-            const cluster = _urlCheck(tjmObject.c);
-            tjmObject.cluster = cluster;
+        if (tjmConfig.c) {
+            const cluster = _urlCheck(tjmConfig.c);
+            tjmConfig.cluster = cluster;
         }
-        if (tjmObject.l) {
-            tjmObject.cluster = 'http://localhost:5678';
+        if (tjmConfig.l) {
+            tjmConfig.cluster = 'http://localhost:5678';
         }
-        if (!_.has(tjmObject, 'cluster') && _.has(tjmObject.asset_file_content, 'tjm.clusters')) {
-                tjmObject.clusters = tjmObject.asset_file_content.tjm.clusters
+        if (!_.has(tjmConfig, 'cluster') && _.has(tjmConfig.asset_file_content, 'tjm.clusters')) {
+                tjmConfig.clusters = tjmConfig.asset_file_content.tjm.clusters
         }
-        if (_.isEmpty(tjmObject.clusters) && !_.has(tjmObject, 'cluster')) {
+        if (_.isEmpty(tjmConfig.clusters) && !_.has(tjmConfig, 'cluster')) {
             reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
         }
     }

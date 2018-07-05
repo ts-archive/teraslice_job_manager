@@ -26,31 +26,31 @@ exports.builder = (yargs) => {
         .example('tjm register jobfile.prod -c clusterDomain -a');
 };
 exports.handler = (argv, _testTjmFunctions) => {
-    const tjmObject = _.clone(argv);
-    dataChecks(tjmObject).returnJobData(true);
-    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(tjmObject);
-    const jobContents = tjmObject.job_file_content;
-    const jobFilePath = tjmObject.job_file_path;
+    const tjmConfig = _.clone(argv);
+    dataChecks(tjmConfig).returnJobData(true);
+    const tjmFunctions = _testTjmFunctions || require('./cmd_functions/functions')(tjmConfig);
+    const jobContents = tjmConfig.job_file_content;
+    const jobFilePath = tjmConfig.job_file_path;
 
     return tjmFunctions.loadAsset()
         .then(() => {
             if (!_.has(jobContents, 'tjm.cluster')) {
-                return tjmFunctions.terasliceClient.jobs.submit(jobContents, !tjmObject.r);
+                return tjmFunctions.terasliceClient.jobs.submit(jobContents, !tjmConfig.r);
             }
-            return Promise.reject(new Error(`Job is already registered on ${tjmObject.cluster}`))
+            return Promise.reject(new Error(`Job is already registered on ${tjmConfig.cluster}`))
         })
         .then((result) => {
             const jobId = result.id();
-            reply.green(`Successfully registered job: ${jobId} on ${tjmObject.cluster}`);
-            _.set(jobContents, 'tjm.cluster', tjmObject.cluster);
+            reply.green(`Successfully registered job: ${jobId} on ${tjmConfig.cluster}`);
+            _.set(jobContents, 'tjm.cluster', tjmConfig.cluster);
             _.set(jobContents, 'tjm.version', '0.0.1');
             _.set(jobContents, 'tjm.job_id', jobId);
             tjmFunctions.createJsonFile(jobFilePath, jobContents);
             reply.green('Updated job file with tjm data');
         })
         .then(() => {
-            if (tjmObject.r) {
-                reply.green(`New job started on ${tjmObject.cluster}`);
+            if (tjmConfig.r) {
+                reply.green(`New job started on ${tjmConfig.cluster}`);
             }
         })
         .catch(err => reply.fatal(err));
