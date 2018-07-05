@@ -38,7 +38,7 @@ exports.builder = (yargs) => {
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmConfig = _.clone(argv);
 
-    // to avoid testing issues rename the test file
+    // rename the asset file for testing to avoid naming collisions
     let assetPath = 'asset/asset.json';
     if (_testTjmFunctions) assetPath = 'asset/assetTest.json';
 
