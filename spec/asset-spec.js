@@ -26,7 +26,25 @@ const _tjmFunctions = {
     zipAsset: () => Promise.resolve({
         bytes: 1000,
         success: 'very successful'
-    })
+    }),
+    terasliceClient: {
+        cluster: {
+            get: (endPoint) => {
+                return Promise.resolve([
+                    {
+                        id: 'someAssetId'
+                    }
+                ]);
+            }
+        },
+        assets: {
+            delete: (assetId) => {
+                return Promise.resolve(
+                    JSON.stringify({ assetId: 'anAssetId' })
+                )
+            }
+        }
+    }
 };
 
 describe('asset command testing', () => {
@@ -98,5 +116,21 @@ describe('asset command testing', () => {
 
         return expect(() => asset.handler(argv, _tjmFunctions))
             .toThrow('Cluster data is missing from asset.json or not specified using -c.');
+    });
+
+    it('asset replace should delete and replace asset by name', (done) => {
+        argv = {
+            cmd: 'replace',
+            l: true,
+        };
+
+        return Promise.resolve()
+            .then(() => fs.ensureFile(assetPath))
+            .then(() => fs.writeJson(assetPath, assetJson, { spaces: 4 }))
+            .then(() => asset.handler(argv, _tjmFunctions))
+            .then((result) => expect(result).toBe('default deployed message'))
+            .catch(done.fail)
+            .finally(() => done());
+            
     });
 });

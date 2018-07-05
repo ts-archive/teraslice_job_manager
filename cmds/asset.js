@@ -38,7 +38,7 @@ exports.builder = (yargs) => {
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmConfig = _.clone(argv);
 
-    // to avoid testing collision rename the asset when testing
+    // to avoid testing issues rename the test file
     let assetPath = 'asset/asset.json';
     if (_testTjmFunctions) assetPath = 'asset/assetTest.json';
 
@@ -132,12 +132,11 @@ exports.handler = (argv, _testTjmFunctions) => {
     } else if (argv.cmd === 'replace') {
         // for dev purposed only, in prod need to upload most recent version
         const assetName = tjmConfig.asset_file_content.name;
-        tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`)
-            .then(assets => assets[0].id)
-            .then(assetId => tjmFunctions.terasliceClient.assets.delete(assetId))
+        return tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`)
+            .then(assets => tjmFunctions.terasliceClient.assets.delete(assets[0].id))
             .then((response) => {
                 const parsedResponse = JSON.parse(response);
-                reply.green(`removed ${parsedResponse.assetId} from ${tjmOb.c}`)
+                reply.green(`removed ${parsedResponse.assetId} from ${tjmConfig.cluster}`)
             })
             .then(() => tjmFunctions.loadAsset())
             .catch(err => reply.fatal(err));

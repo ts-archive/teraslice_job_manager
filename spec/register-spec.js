@@ -23,7 +23,6 @@ describe('register should register job with cluster and follow options', () => {
                 post: () => Promise.resolve(assetObject)
             }
         },
-        httpClusterNameCheck: (cluster) => 'good',
         loadAsset: () => {
             if (argv.a) {
                 return Promise.resolve('loaded');
