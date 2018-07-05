@@ -11,13 +11,13 @@ exports.builder = (yargs) => {
     yargs.example('tjm pause jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    const tjmObject = _.clone(argv);
-    dataChecks(tjmObject).returnJobData();
+    const tjmConfig = _.clone(argv);
+    dataChecks(tjmConfig).returnJobData();
     // teraslice client functions or test functions
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmConfig);
 
-    const jobId = tjmObject.job_file_content.tjm.job_id;
-    const cluster = tjmObject.cluster;
+    const jobId = tjmConfig.job_file_content.tjm.job_id;
+    const cluster = tjmConfig.cluster;
 
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).status())

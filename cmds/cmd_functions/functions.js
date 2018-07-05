@@ -7,13 +7,13 @@ const Promise = require('bluebird');
 const reply = require('./reply')();
 const path = require('path');
 
-module.exports = (tjmObject) => {
+module.exports = (tjmConfig) => {
     let teraslice = require('teraslice-client-js')({
-        host: `${tjmObject.cluster}`
+        host: `${tjmConfig.cluster}`
     });
 
     function alreadyRegisteredCheck() {
-        const jobContents = tjmObject.job_file_content;
+        const jobContents = tjmConfig.job_file_content;
         if (_.has(jobContents, 'tjm.cluster')) {
             return teraslice.jobs.wrap(jobContents.tjm.job_id).spec()
                 .then((jobSpec) => {
@@ -35,7 +35,7 @@ module.exports = (tjmObject) => {
     }
 
     function loadAsset() {
-        if (!tjmObject.a) {
+        if (!tjmConfig.a) {
             return Promise.resolve();
         }
         return fs.emptyDir(path.join(process.cwd(), 'builds'))
@@ -50,7 +50,7 @@ module.exports = (tjmObject) => {
                 if (postResponseJson.error) {
                     return Promise.reject(new Error(postResponseJson.error));
                 }
-                reply.green(`Asset posted to ${tjmObject.c} with id ${postResponseJson._id}`);
+                reply.green(`Asset posted to ${tjmConfig.c} with id ${postResponseJson._id}`);
                 return Promise.resolve();
             })
             .then(() => {
@@ -58,7 +58,7 @@ module.exports = (tjmObject) => {
                 return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson);
             })
             .then(() => reply.green('TJM data added to asset.json'))
-            .then(() => reply.green(`Asset has successfully been deployed to ${tjmObject.c}`));
+            .then(() => reply.green(`Asset has successfully been deployed to ${tjmConfig.c}`));
     }
 
     function createJsonFile(filePath, jsonObject) {
@@ -101,7 +101,7 @@ module.exports = (tjmObject) => {
             throw new Error(`Could not load asset.json: ${err.message}`);
         }
 
-        const cluster = tjmObject.l ? 'http://localhost:5678' : tjmObject.c;
+        const cluster = tjmConfig.l ? 'http://localhost:5678' : tjmConfig.c;
         if (_.has(assetJson, 'tjm.clusters')) {
             if (_.indexOf(assetJson.tjm.clusters, cluster) >= 0) {
                 throw new Error(`Assets have already been deployed to ${cluster}, use update`);

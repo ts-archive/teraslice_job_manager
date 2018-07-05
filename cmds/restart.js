@@ -10,10 +10,10 @@ exports.builder = (yargs) => {
     yargs.example('tjm restart jobfile.prod.json');
 };
 exports.handler = (argv, _testFunctions) => {
-    const tjmObject = _.clone(argv);
-    dataChecks(tjmObject).returnJobData();
-    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
-    const jobContents = tjmObject.job_file_content;
+    const tjmConfig = _.clone(argv);
+    dataChecks(tjmConfig).returnJobData();
+    const tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmConfig);
+    const jobContents = tjmConfig.job_file_content;
     const jobId = jobContents.tjm.job_id;
 
     return tjmFunctions.alreadyRegisteredCheck()

@@ -10,15 +10,15 @@ exports.builder = (yargs) => {
     yargs.example('tjm view jobfile.prod');
 };
 exports.handler = (argv, _testFunctions) => {
-    const tjmObject = _.clone(argv);
-    dataChecks(tjmObject).returnJobData();
-    let tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmObject);
+    const tjmConfig = _.clone(argv);
+    dataChecks(tjmConfig).returnJobData();
+    let tjmFunctions = _testFunctions || require('./cmd_functions/functions')(tjmConfig);
 
-    const jobId = tjmObject.job_file_content.tjm.job_id;
+    const jobId = tjmConfig.job_file_content.tjm.job_id;
     return tjmFunctions.alreadyRegisteredCheck()
         .then(() => tjmFunctions.teraslice.jobs.wrap(jobId).spec())
         .then(jobSpec => {
-            reply.yellow(`Current Job File on Cluster ${tjmObject.cluster}:`);
+            reply.yellow(`Current Job File on Cluster ${tjmConfig.cluster}:`);
             reply.green(JSON.stringify(jobSpec, null, 4));
             return jobSpec;
         })
