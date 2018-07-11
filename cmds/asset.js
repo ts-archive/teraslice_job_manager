@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
+const prompts = require('prompts');
 const Promise = require('bluebird');
 const reply = require('./cmd_functions/reply')();
 const dataChecks = require('./cmd_functions/data_checks');
@@ -131,8 +132,16 @@ exports.handler = (argv, _testTjmFunctions) => {
         return latestAssetVersion(tjmConfig.cluster);
     } else if (argv.cmd === 'replace') {
         // for dev purposed only, in prod need to upload most recent version
+        reply.yellow('*** Warning ***\nThis function is intended for asset development only.  Using it for production asset management is a bad idea.');
+        
         const assetName = tjmConfig.asset_file_content.name;
-        return tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`)
+        // set prompts answer for testing
+        if (_testTjmFunctions) prompts.inject({continue: _testTjmFunctions.continue});
+    
+        return Promise.resolve()
+            .then(() => prompts({ type: 'confirm', name: 'continue', message: 'Replace Assets?'}))
+            .then(result => result.continue ? true : Promise.reject('Exiting tjm'))
+            .then(() => tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`))
             .then(assets => tjmFunctions.terasliceClient.assets.delete(assets[0].id))
             .then((response) => {
                 const parsedResponse = JSON.parse(response);

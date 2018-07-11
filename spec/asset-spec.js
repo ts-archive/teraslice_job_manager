@@ -110,19 +110,21 @@ describe('asset command testing', () => {
     });
 
 
-    it('asset update should throw an error if no cluster data', () => {
+    it('update should throw an error if no cluster data', () => {
         argv = {};
         argv.cmd = 'update';
 
-        return expect(() => asset.handler(argv, _tjmFunctions))
+        expect(() => asset.handler(argv, _tjmFunctions))
             .toThrow('Cluster data is missing from asset.json or not specified using -c.');
     });
 
-    it('asset replace should delete and replace asset by name', (done) => {
+    it('replace should delete and replace asset by name', (done) => {
         argv = {
             cmd: 'replace',
             l: true,
         };
+
+        _tjmFunctions.continue = true;
 
         return Promise.resolve()
             .then(() => fs.ensureFile(assetPath))
@@ -130,6 +132,25 @@ describe('asset command testing', () => {
             .then(() => asset.handler(argv, _tjmFunctions))
             .then((result) => expect(result).toBe('default deployed message'))
             .catch(done.fail)
+            .finally(() => done());
+            
+    });
+
+    it('replace should exit if continue is false', (done) => {
+        argv = {
+            cmd: 'replace',
+            l: true,
+        };
+
+        _tjmFunctions.continue = false;
+
+        return Promise.resolve()
+            .then(() => fs.ensureFile(assetPath))
+            .then(() => fs.writeJson(assetPath, assetJson, { spaces: 4 }))
+            .then(() => asset.handler(argv, _tjmFunctions))
+            .catch((err) => {
+                expect(err).toBe('Exiting tjm');
+            })
             .finally(() => done());
             
     });

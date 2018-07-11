@@ -50,7 +50,7 @@ module.exports = (tjmConfig) => {
                 if (postResponseJson.error) {
                     return Promise.reject(new Error(postResponseJson.error));
                 }
-                reply.green(`Asset posted to ${tjmConfig.c} with id ${postResponseJson._id}`);
+                reply.green(`Asset posted to ${tjmConfig.cluster} with id ${postResponseJson._id}`);
                 return Promise.resolve();
             })
             .then(() => {
@@ -58,7 +58,7 @@ module.exports = (tjmConfig) => {
                 return createJsonFile(path.join(process.cwd(), 'asset/asset.json'), assetJson);
             })
             .then(() => reply.green('TJM data added to asset.json'))
-            .then(() => reply.green(`Asset has successfully been deployed to ${tjmConfig.c}`));
+            .then(() => reply.green(`Asset has successfully been deployed to ${tjmConfig.cluster}`));
     }
 
     function createJsonFile(filePath, jsonObject) {
