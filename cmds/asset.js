@@ -45,8 +45,7 @@ exports.handler = (argv, _testTjmFunctions) => {
 
     try {
         tjmConfig.asset_file_content = require(path.join(process.cwd(), assetPath));
-    } 
-    catch (error) {
+    } catch (error) {
         reply.fatal(error);
     }
 
@@ -86,8 +85,9 @@ exports.handler = (argv, _testTjmFunctions) => {
             .then(() => {
                 if (_.has(tjmConfig.asset_file_content.tjm, 'clusters') &&
                     _.indexOf(tjmConfig.asset_file_content.tjm.clusters, tjmConfig.c) >= 0) {
-                    return Promise.reject( new Error(`Assets have already been deployed to ${tjmConfig.c}, use update`));
+                    return Promise.reject(new Error(`Assets have already been deployed to ${tjmConfig.c}, use update`));
                 }
+                return Promise.resolve();
             })
             .then(() => tjmFunctions.loadAsset())
             .catch((err) => {
@@ -119,35 +119,36 @@ exports.handler = (argv, _testTjmFunctions) => {
                             }
                         });
                 }
-                if(_.has(tjmConfig, 'clusters')) {
+                if (_.has(tjmConfig, 'clusters')) {
                     return tjmConfig.clusters.forEach(cluster => postAssets(cluster));
                 }
                 return postAssets(tjmConfig.cluster);
             })
             .catch(err => reply.fatal((err.message)));
     } else if (argv.cmd === 'status') {
-        if(_.has(tjmConfig, 'clusters')) {
+        if (_.has(tjmConfig, 'clusters')) {
             return Promise.each(tjmConfig.clusters, cluster => latestAssetVersion(cluster));
         }
         return latestAssetVersion(tjmConfig.cluster);
     } else if (argv.cmd === 'replace') {
         // for dev purposed only, in prod need to upload most recent version
         reply.yellow('*** Warning ***\nThis function is intended for asset development only.  Using it for production asset management is a bad idea.');
-        
+
         const assetName = tjmConfig.asset_file_content.name;
         // set prompts answer for testing
-        if (_testTjmFunctions) prompts.inject({continue: _testTjmFunctions.continue});
-    
+        if (_testTjmFunctions) prompts.inject({ continue: _testTjmFunctions.continue });
+
         return Promise.resolve()
-            .then(() => prompts({ type: 'confirm', name: 'continue', message: 'Replace Assets?'}))
-            .then(result => result.continue ? true : Promise.reject('Exiting tjm'))
+            .then(() => prompts({ type: 'confirm', name: 'continue', message: 'Replace Assets?' }))
+            .then(result => (result.continue ? true : Promise.reject('Exiting tjm')))
             .then(() => tjmFunctions.terasliceClient.cluster.get(`/assets/${assetName}`))
             .then(assets => tjmFunctions.terasliceClient.assets.delete(assets[0].id))
             .then((response) => {
                 const parsedResponse = JSON.parse(response);
-                reply.green(`removed ${parsedResponse.assetId} from ${tjmConfig.cluster}`)
+                reply.green(`removed ${parsedResponse.assetId} from ${tjmConfig.cluster}`);
             })
             .then(() => tjmFunctions.loadAsset())
             .catch(err => reply.fatal(err));
     }
+    return reply.fatal('Not a asset function, check help and try again');
 };

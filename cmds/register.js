@@ -37,7 +37,7 @@ exports.handler = (argv, _testTjmFunctions) => {
             if (!_.has(jobContents, 'tjm.cluster')) {
                 return tjmFunctions.terasliceClient.jobs.submit(jobContents, !tjmConfig.r);
             }
-            return Promise.reject(new Error(`Job is already registered on ${tjmConfig.cluster}`))
+            return Promise.reject(new Error(`Job is already registered on ${tjmConfig.cluster}`));
         })
         .then((result) => {
             const jobId = result.id();

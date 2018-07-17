@@ -15,11 +15,11 @@ module.exports = (tjmConfig) => {
             tjmConfig.cluster = tjmConfig.job_file_content.tjm.cluster;
             return;
         }
-        
+
         tjmConfig.cluster = tjmConfig.l ? 'http://localhost:5678' : _urlCheck(tjmConfig.c);
 
-        if(!tjmConfig.cluster) {
-            reply.fatal('Use -c to specify a cluster or use -l for localhost')
+        if (!tjmConfig.cluster) {
+            reply.fatal('Use -c to specify a cluster or use -l for localhost');
         }
     }
 
@@ -62,7 +62,7 @@ module.exports = (tjmConfig) => {
 
     function _urlCheck(url) {
         // check that url starts with http:// but allow for https://
-        return url.indexOf('http') === -1 ? `http://${url}`: url;
+        return url.indexOf('http') === -1 ? `http://${url}` : url;
     }
 
     function getAssetClusters() {
@@ -74,7 +74,7 @@ module.exports = (tjmConfig) => {
             tjmConfig.cluster = 'http://localhost:5678';
         }
         if (!_.has(tjmConfig, 'cluster') && _.has(tjmConfig.asset_file_content, 'tjm.clusters')) {
-                tjmConfig.clusters = tjmConfig.asset_file_content.tjm.clusters
+            tjmConfig.clusters = tjmConfig.asset_file_content.tjm.clusters;
         }
         if (_.isEmpty(tjmConfig.clusters) && !_.has(tjmConfig, 'cluster')) {
             reply.fatal('Cluster data is missing from asset.json or not specified using -c.');

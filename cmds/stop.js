@@ -22,7 +22,7 @@ exports.handler = (argv, _testFunctions) => {
                 return Promise.reject(new Error('Job could not be stopped'));                
             }
             reply.green(`Stopped job ${jobId} on ${argv.cluster}`);
-                return stopResponse;
+            return stopResponse;
         })
         .catch(err => reply.fatal(err));
 };

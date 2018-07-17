@@ -6,25 +6,17 @@ const path = require('path');
 describe('checks to for job and asset file content', () => {
     it('job files do not have to end in json', () => {
         fs.writeFileSync(
-            path.join(
-                __dirname,
-                '..',
-                'tfile.prod.json'
-            ),
+            path.join(__dirname, '..', 'tfile.prod.json'),
             JSON.stringify({ test: 'test' })
         );
 
         const tjmConfig = {
-            job_file: 'tfile.prod.json',
+            job_file: 'tfile.prod',
             tjm_check: false
-        }
+        };
 
-        let jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
-        let jobData = jobFileFunctions.jobFileHandler();
-        expect(tjmConfig.job_file_content.test).toBe('test');
-
-        jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
-        jobData = jobFileFunctions.jobFileHandler();
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
+        jobFileFunctions.jobFileHandler();
         expect(tjmConfig.job_file_content.test).toBe('test');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
@@ -52,11 +44,11 @@ describe('checks to for job and asset file content', () => {
                 'testFile.json'
             ),
             JSON.stringify({ })
-            );
+        );
 
         const tjmConfig = {
             job_file: 'testFile.json'
-        }
+        };
 
         const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
         expect(jobFileFunctions.jobFileHandler)
@@ -96,11 +88,7 @@ describe('checks to for job and asset file content', () => {
 
     it('cluster should be localhost', () => {
         // create test file
-        fs.writeFileSync(path.join(__dirname,
-            '..',
-            'tfile.prod.json'),
-            JSON.stringify({ test: 'test' })
-        );
+        fs.writeFileSync(path.join(__dirname, '..', 'tfile.prod.json'), JSON.stringify({ test: 'test' }));
 
         const tjmConfig = {
             job_file: 'tfile.prod.json',
@@ -109,23 +97,20 @@ describe('checks to for job and asset file content', () => {
 
         const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
 
-        const jobData = jobFileFunctions.returnJobData(true);
+        jobFileFunctions.returnJobData(true);
         expect(tjmConfig.cluster).toBe('http://localhost:5678');
         fs.unlinkSync(path.join(__dirname, '..', 'tfile.prod.json'));
     });
 
     it('cluster should be from jobFile', () => {
         // create test file
-        fs.writeFileSync(path.join(__dirname, '..',
-            'fakeFile.json'),
-            JSON.stringify({ 
-                name: 'fakeJob',
-                tjm: {
-                    cluster: 'aclustername',
-                    job_id: 'jobid'
-                }
-            })
-        );
+        fs.writeFileSync(path.join(__dirname, '..', 'fakeFile.json'), JSON.stringify({
+            name: 'fakeJob',
+            tjm: {
+                cluster: 'aclustername',
+                job_id: 'jobid'
+            }
+        }));
 
         const tjmConfig = {
             job_file: 'fakeFile.json',
@@ -133,19 +118,16 @@ describe('checks to for job and asset file content', () => {
         };
 
         const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
-        const jobData = jobFileFunctions.returnJobData();
+        jobFileFunctions.returnJobData();
         expect(tjmConfig.cluster).toBe('aclustername');
         fs.unlinkSync(path.join(__dirname, '..', 'fakeFile.json'));
     });
 
     it('cluster should be from -c', () => {
         // create test file
-        fs.writeFileSync(path.join(__dirname, '..',
-            'fakeFile2.json'),
-            JSON.stringify({ 
-                name: 'fakeJob',
-            })
-        );
+        fs.writeFileSync(path.join(__dirname, '..', 'fakeFile2.json'), JSON.stringify({
+            name: 'fakeJob',
+        }));
 
         const tjmConfig = {
             job_file: 'fakeFile2.json',
@@ -153,7 +135,7 @@ describe('checks to for job and asset file content', () => {
         };
 
         const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
-        const jobData = jobFileFunctions.returnJobData(true);
+        jobFileFunctions.returnJobData(true);
         expect(tjmConfig.cluster).toBe('http://someClusterName');
         fs.unlinkSync(path.join(__dirname, '..', 'fakeFile2.json'));
     });
