@@ -9,32 +9,51 @@ const reply = require('./cmd_functions/reply')();
 const dataChecks = require('./cmd_functions/data_checks');
 
 
-exports.command = 'asset <cmd>';
-exports.desc = 'Deploys, updates or checks the status of an asset.  Options are deploy, update, status.  Assumes assets are in ./asset.  Adds metadata to asset.json once deployed.\n';
+exports.command = 'asset';
+exports.desc = 'Zip and post assets to a cluster';
 exports.builder = (yargs) => {
     yargs
-        .option(
-            'c',
-            {
-                describe: 'cluster where assets will be deployed, updated or checked',
-                default: ''
-            }
-        )
-        .option(
-            'a',
-            {
-                describe: 'create and deply assets, on by default',
-                default: true,
-                type: 'boolean'
-            }
-        )
+        .option('c', {
+            describe: 'cluster where assets will be deployed, updated or checked',
+            default: ''
+        })
+        .option('a', {
+            describe: 'zip and deploy assets, on by default',
+            type: 'boolean',
+            default: true,
+            hidden: true
+        })
         .option('l', {
             describe: 'for testing, specifies localhost',
             default: false,
             type: 'boolean'
         })
-        .choices('cmd', ['deploy', 'update', 'status', 'replace'])
-        .example('tjm asset deploy -c clustername, tjm asset update or tjm asset status');
+        .option('deploy', {
+            alias: 'd',
+            describe: 'deploy assets to a cluster, used with c, conflicts with update and status',
+            default: false,
+            type: 'boolean'
+        })
+        .option('status', {
+            alias: 's',
+            describe: 'displays the latest version of the asset on a cluster, can be used with cluster',
+            default: false,
+            type: 'boolean'
+        })
+        .option('update', {
+            alias: 'u',
+            describe: 'posts latest asset version on the cluster, can be used with -c or update all clusters in asset.json',
+            default: false,
+            type: 'boolean'
+        })
+        .option('replace', {
+            alias: 'r',
+            describe: 'deletes asset on cluster and then zips and posts a new one, dev use only',
+            default: false,
+            type: 'boolean',
+            hidden: true
+        })
+        .example('tjm asset deploy -c clustername');
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmConfig = _.clone(argv);
@@ -79,8 +98,7 @@ exports.handler = (argv, _testTjmFunctions) => {
                 reply.fatal(err);
             });
     }
-
-    if (argv.cmd === 'deploy') {
+    if (argv.deploy) {
         return Promise.resolve()
             .then(() => {
                 if (_.has(tjmConfig.asset_file_content.tjm, 'clusters') &&
@@ -96,7 +114,7 @@ exports.handler = (argv, _testTjmFunctions) => {
                 }
                 reply.fatal(err);
             });
-    } else if (argv.cmd === 'update') {
+    } else if (argv.update) {
         return fs.emptyDir(path.join(process.cwd(), 'builds'))
             .then(() => tjmFunctions.zipAsset())
             .then((zipData) => {
@@ -125,12 +143,12 @@ exports.handler = (argv, _testTjmFunctions) => {
                 return postAssets(tjmConfig.cluster);
             })
             .catch(err => reply.fatal((err.message)));
-    } else if (argv.cmd === 'status') {
+    } else if (argv.status) {
         if (_.has(tjmConfig, 'clusters')) {
             return Promise.each(tjmConfig.clusters, cluster => latestAssetVersion(cluster));
         }
         return latestAssetVersion(tjmConfig.cluster);
-    } else if (argv.cmd === 'replace') {
+    } else if (argv.replace) {
         // for dev purposed only, in prod need to upload most recent version
         reply.yellow('*** Warning ***\nThis function is intended for asset development only.  Using it for production asset management is a bad idea.');
 

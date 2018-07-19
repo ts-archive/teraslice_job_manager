@@ -7,7 +7,6 @@ const Promise = require('bluebird');
 const register = require('../cmds/register');
 
 describe('register should register job with cluster and follow options', () => {
-    const fakeJobData = require('./fixtures/test_job_file.json');
     const argv = {};
 
     const _testTJMFunctions = {
@@ -29,20 +28,6 @@ describe('register should register job with cluster and follow options', () => {
         },
         createJsonFile: (filePath, jsonObject) => fs.writeJson(filePath, jsonObject, { spaces: 4 })
     };
-
-    it('job should throw an error if the job has tjm data', (done) => {
-        argv.c = 'http://localhost:5678';
-        const jobPath = path.join(__dirname, 'fixtures/regJobFile.json');
-        fs.writeJsonSync(jobPath, fakeJobData, { spaces: 4 });
-        argv.job_file = 'spec/fixtures/regJobFile.json';
-        register.handler(argv, _testTJMFunctions)
-            .then(done.fail)
-            .catch(() => done())
-            .finally(() => {
-                fs.removeSync(jobPath);
-                done();
-            });
-    });
 
     it('register should add tjm data to job file', (done) => {
         const regJobData = {

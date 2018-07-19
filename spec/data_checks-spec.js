@@ -3,7 +3,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 
-describe('checks to for job and asset file content', () => {
+describe('checks for job and asset file content', () => {
     it('job files do not have to end in json', () => {
         fs.writeFileSync(
             path.join(__dirname, '..', 'tfile.prod.json'),
@@ -12,7 +12,8 @@ describe('checks to for job and asset file content', () => {
 
         const tjmConfig = {
             job_file: 'tfile.prod',
-            tjm_check: false
+            tjm_check: false,
+            c: 'clusterOne'
         };
 
         const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
@@ -70,7 +71,7 @@ describe('checks to for job and asset file content', () => {
 
         const tjmConfig = {};
 
-        let jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
         expect(jobFileFunctions._tjmDataCheck(jsonFileData)).toBe(true);
         delete jsonFileData.tjm;
 
@@ -82,8 +83,7 @@ describe('checks to for job and asset file content', () => {
 
         // test no metadata
         delete jsonFileData.tjm;
-        jobFileFunctions = require('../cmds/cmd_functions/data_checks')();
-        expect(jobFileFunctions._tjmDataCheck).toThrow('No teraslice job manager metadata, register the job or deploy the assets');
+        expect(jobFileFunctions._tjmDataCheck(jsonFileData)).toBe(false);
     });
 
     it('cluster should be localhost', () => {
@@ -145,6 +145,43 @@ describe('checks to for job and asset file content', () => {
         expect(jobFileFunctions._urlCheck('http://bobsyouruncle.com')).toEqual('http://bobsyouruncle.com');
         expect(jobFileFunctions._urlCheck('https://bobsyouruncle.com')).toEqual('https://bobsyouruncle.com');
         expect(jobFileFunctions._urlCheck('bobsyouruncle.com')).toEqual('http://bobsyouruncle.com');
+    });
+
+    it('should throw an error if -c and tjm cluster in jobs file', () => {
+        const tjmConfig = {
+            c: true,
+            job_file: 'spec/fixtures/regJobFile.json'
+        };
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
+        expect(jobFileFunctions.jobFileHandler).toThrow('Command specified a cluster via -c but the job is already associated with a cluster');
+    });
+
+    it('should throw an error if no cluster specified', () => {
+        fs.writeFileSync(path.join(__dirname, '..', 'fakeFile2.json'), JSON.stringify({
+            name: 'fakeJob',
+        }));
+        const tjmConfig = {
+            job_file: 'fakeFile2.json'
+        };
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
+        expect(jobFileFunctions.jobFileHandler).toThrow('Please specify a cluster with -c');
+        fs.removeSync('fakeFile2.json');
+    });
+
+    it('should throw an error if -m and no -c', () => {
+        fs.writeFileSync(path.join(__dirname, '..', 'fakeFile3.json'), JSON.stringify({
+            name: 'fakeJob',
+            tjm: {
+                cluster: 'abadcluster'
+            }
+        }));
+        const tjmConfig = {
+            m: true,
+            job_file: 'fakeFile3.json'
+        };
+        const jobFileFunctions = require('../cmds/cmd_functions/data_checks')(tjmConfig);
+        expect(jobFileFunctions.jobFileHandler).toThrow('Specify a cluster to move the jobe to with -c');
+        fs.removeSync('fakeFile3.json');
     });
 });
 
