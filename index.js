@@ -2,7 +2,7 @@
 
 'use strict';
 
-const { argv } = require('yargs')
+const { argv } = require('yargs') // eslint-disable-line no-unused-vars
     .commandDir('cmds')
     .demandCommand()
     .help('help')
