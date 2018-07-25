@@ -47,11 +47,11 @@ For all commands that accept `-c`, if `-c` is missing default is http://localhos
 **RESUME** - Resumes a paused job.
 - `tjm resume jobFile.json`
 
-**START (RUN)** - Starts a job. Run is an alias for start.  Start will automatically register and start a new job, just remember to specify the cluster with `-c`.  Start can also be used to move a job to a new cluster with `-m`, this does not move the asset only the job file.
+**START (RUN)** - Starts a job. Run is an alias for start, run and start can be used interchangeably.  Start will automatically register and start a new job, just remember to specify the cluster with `-c`.  Start can also be used to move a job to a new cluster with `-m`, this does not move the asset only the job file.
 - `tjm start jobFile.json`
 - `tjm run jobFile.json`
-- `tjm start jobFile -c clustername` (for a new job)
--  `tjm run -m jobFile -c clusterName` (runs a job on a new cluster, replaces old tjm data in the jobFile)
+- `tjm start jobFile -c clustername` *register and run a new job, same as tjm register -r jobfile -c clustername*
+-  `tjm run -m jobFile -c clusterName` *runs a job on a new cluster, replaces the old tjm data in the jobFile*
 
 
 **STATUS** - Reports the status of a job.
