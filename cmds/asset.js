@@ -48,12 +48,14 @@ exports.builder = (yargs) => {
         })
         .option('replace', {
             alias: 'r',
-            describe: 'deletes asset on cluster and then zips and posts a new one, dev use only',
+            describe: 'deletes asset on cluster then zips and posts a new one, recommended dev use only',
             default: false,
-            type: 'boolean',
-            hidden: true
+            type: 'boolean'
         })
-        .example('tjm asset deploy -c clustername');
+        .example('tjm asset --deploy -c clustername (deploys asset to cluster)\n' +
+            'tjm asset -dc clustername (same as above, but shorthand)\n' +
+            'tjm asset --update -l (updates asset on localhost)\n' +
+            'tjm asset -ul (shorthand for above)\n');
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmConfig = _.clone(argv);
