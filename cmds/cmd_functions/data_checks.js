@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const path = require('path');
-const reply = require('./reply')();
+const reply = require('./reply');
 
 module.exports = (tjmConfig) => {
     function returnJobData() {
@@ -85,6 +85,7 @@ module.exports = (tjmConfig) => {
             reply.fatal('Cluster data is missing from asset.json or not specified using -c.');
         }
     }
+
     return {
         returnJobData,
         jobFileHandler,

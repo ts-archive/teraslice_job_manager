@@ -4,7 +4,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const archiver = require('archiver');
 const Promise = require('bluebird');
-const reply = require('./reply')();
+const reply = require('./reply');
 const path = require('path');
 
 module.exports = (tjmConfig) => {

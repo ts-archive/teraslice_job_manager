@@ -1,7 +1,7 @@
 'use strict';
 
 
-const reply = require('./cmd_functions/reply')();
+const reply = require('./cmd_functions/reply');
 const dataChecks = require('./cmd_functions/data_checks');
 const _ = require('lodash');
 

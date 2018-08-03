@@ -5,9 +5,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const prompts = require('prompts');
 const Promise = require('bluebird');
-const reply = require('./cmd_functions/reply')();
+const reply = require('./cmd_functions/reply');
 const dataChecks = require('./cmd_functions/data_checks');
-
 
 exports.command = 'asset';
 exports.desc = 'Zip and post assets to a cluster';
@@ -52,10 +51,10 @@ exports.builder = (yargs) => {
             default: false,
             type: 'boolean'
         })
-        .example('tjm asset --deploy -c clustername (deploys asset to cluster)\n' +
-            'tjm asset -dc clustername (same as above, but shorthand)\n' +
-            'tjm asset --update -l (updates asset on localhost)\n' +
-            'tjm asset -ul (shorthand for above)\n');
+        .example('tjm asset --deploy -c clustername (deploys asset to cluster)\n'
+            + 'tjm asset -dc clustername (same as above, but shorthand)\n'
+            + 'tjm asset --update -l (updates asset on localhost)\n'
+            + 'tjm asset -ul (shorthand for above)\n');
 };
 exports.handler = (argv, _testTjmFunctions) => {
     const tjmConfig = _.clone(argv);
@@ -116,7 +115,7 @@ exports.handler = (argv, _testTjmFunctions) => {
                 }
                 reply.fatal(err);
             });
-    } else if (argv.update) {
+    } if (argv.update) {
         return fs.emptyDir(path.join(process.cwd(), 'builds'))
             .then(() => tjmFunctions.zipAsset())
             .then((zipData) => {
@@ -145,12 +144,12 @@ exports.handler = (argv, _testTjmFunctions) => {
                 return postAssets(tjmConfig.cluster);
             })
             .catch(err => reply.fatal((err.message)));
-    } else if (argv.status) {
+    } if (argv.status) {
         if (_.has(tjmConfig, 'clusters')) {
             return Promise.each(tjmConfig.clusters, cluster => latestAssetVersion(cluster));
         }
         return latestAssetVersion(tjmConfig.cluster);
-    } else if (argv.replace) {
+    } if (argv.replace) {
         // for dev purposed only, in prod need to upload most recent version
         reply.yellow('*** Warning ***\nThis function is intended for asset development only.  Using it for production asset management is a bad idea.');
 
