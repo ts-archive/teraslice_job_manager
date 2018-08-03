@@ -100,7 +100,6 @@ exports.handler = (argv, _testTjmFunctions) => {
                 }
 
                 reply.green(`Cluster: ${cluster}, Name: ${latest[0]}, Version: ${latest[1]}`);
-
                 return null;
             })
             .catch((err) => {
