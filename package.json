@@ -41,7 +41,7 @@
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.5",
     "prompts": "^0.1.11",
-    "teraslice-client-js": "terascope/teraslice-client-js",
+    "teraslice-client-js": "^0.1.0",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
