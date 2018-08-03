@@ -7,8 +7,8 @@
     "access": "public"
   },
   "scripts": {
-    "lint": "eslint *.js spec cmd",
-    "lint:fix": "eslint --fix *.js spec cmd",
+    "lint": "eslint *.js spec cmds",
+    "lint:fix": "eslint --fix *.js spec cmds",
     "test": "nyc -x spec/ --reporter=text-summary jasmine && nyc report --reporter=html",
     "report-coverage": "nyc report --reporter=text-lcov > coverage/coverage.lcov && codecov"
   },
