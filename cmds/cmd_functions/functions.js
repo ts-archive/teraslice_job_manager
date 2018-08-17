@@ -5,16 +5,13 @@ const fs = require('fs-extra');
 const archiver = require('archiver');
 const Promise = require('bluebird');
 const path = require('path');
+const TerasliceClient = require('teraslice-client-js');
 const reply = require('./reply');
 
-module.exports = (tjmConfig) => {
-    let terasliceClient;
-
-    if (!tjmConfig.cluster) {
-        terasliceClient = require('teraslice-client-js')({
-            host: tjmConfig.cluster
-        });
-    }
+module.exports = (tjmConfig, _terasliceClient) => {
+    const terasliceClient = _terasliceClient || TerasliceClient({
+        host: tjmConfig.cluster
+    });
 
     function alreadyRegisteredCheck() {
         const jobContents = tjmConfig.job_file_content;
@@ -112,10 +109,6 @@ module.exports = (tjmConfig) => {
         return assetJson;
     }
 
-    function __testContext(_terasliceClient) {
-        terasliceClient = _terasliceClient;
-    }
-
     function __testFunctions() {
         return {
             _updateAssetMetadata,
@@ -128,7 +121,6 @@ module.exports = (tjmConfig) => {
         loadAsset,
         createJsonFile,
         terasliceClient,
-        __testContext,
         __testFunctions,
         zipAsset,
     };

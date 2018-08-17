@@ -8,7 +8,7 @@ const tjmConfig = {
 
 const Promise = require('bluebird');
 const path = require('path');
-let tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
+const TjmFunctions = require('../cmds/cmd_functions/functions');
 
 let jobContents;
 let someJobId;
@@ -71,8 +71,7 @@ describe('tjmFunctions testing', () => {
 
         someJobId = 'jobYouAreLookingFor';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
-        tjmFunctions.__testContext(_terasliceClient);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         tjmFunctions.alreadyRegisteredCheck()
             .then(result => expect(result).toBe(true))
             .catch(done.fail)
@@ -92,8 +91,7 @@ describe('tjmFunctions testing', () => {
         tjmConfig.job_file_path = 'someFilePath';
         tjmConfig.cluster = 'http://clustername.dev';
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
-        tjmFunctions.__testContext(_terasliceClient);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         tjmFunctions.alreadyRegisteredCheck(jobContents)
             .catch(err => expect(err.message).toEqual('Job is not on the cluster'))
             .finally(() => done());
@@ -105,7 +103,7 @@ describe('tjmFunctions testing', () => {
         tjmConfig.job_file_path = 'someFilePath';
 
         someJobId = 'jobYouAreLookingFor';
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         tjmFunctions.alreadyRegisteredCheck()
             .catch(err => expect(err.message).toEqual('No cluster configuration for this job'))
             .finally(() => done());
@@ -119,9 +117,9 @@ describe('tjmFunctions testing', () => {
             description: 'dummy asset.json for testing'
         };
 
-        const tjmFuncs = require('../cmds/cmd_functions/functions')(tjmConfig);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         return Promise.resolve()
-            .then(() => tjmFuncs.__testFunctions()._updateAssetMetadata())
+            .then(() => tjmFunctions.__testFunctions()._updateAssetMetadata())
             .then((jsonResult) => {
                 expect(jsonResult.tjm).toBeDefined();
                 expect(jsonResult.tjm.clusters[0]).toBe('http://example.dev:5678');
@@ -141,7 +139,7 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         return Promise.resolve()
             .then(() => tjmFunctions.__testFunctions()._updateAssetMetadata())
             .then((jsonResult) => {
@@ -165,7 +163,7 @@ describe('tjmFunctions testing', () => {
             }
         };
 
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         return Promise.resolve()
             .then(() => tjmFunctions.__testFunctions()._updateAssetMetadata())
             .then((jsonResult) => {
@@ -187,6 +185,8 @@ describe('tjmFunctions testing', () => {
                 clusters: ['http://example.dev:5678', 'http://newCluster:5678', 'http://anotherCluster:5678']
             }
         };
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
+
         return Promise.all([
             fs.writeFile(path.join(__dirname, '..', 'asset/asset.json'), JSON.stringify(assetJson, null, 4)),
             fs.emptyDir(path.join(__dirname, '..', 'builds'))
@@ -205,13 +205,11 @@ describe('tjmFunctions testing', () => {
             _id: '12345AssetId'
         });
 
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
         Promise.resolve()
             .then(() => fs.emptyDir(path.join(__dirname, '..', 'builds')))
             .then(() => fs.writeFile(path.join(__dirname, '..', 'builds/processors.zip'), 'this is some sweet text'))
-            .then(() => {
-                tjmFunctions.__testContext(_terasliceClient);
-                return tjmFunctions.__testFunctions()._postAsset();
-            })
+            .then(() => tjmFunctions.__testFunctions()._postAsset())
             .then((response) => {
                 const parsedResponse = JSON.parse(response);
                 expect(parsedResponse.success).toBe('Asset was deployed');
@@ -225,8 +223,7 @@ describe('tjmFunctions testing', () => {
         assetObject = JSON.stringify({ success: 'this worked', _id: '1235fakejob' });
         tjmConfig.cluster = 'http://example.dev:5678';
         tjmConfig.a = true;
-        tjmFunctions = require('../cmds/cmd_functions/functions')(tjmConfig);
-        tjmFunctions.__testContext(_terasliceClient);
+        const tjmFunctions = TjmFunctions(tjmConfig, _terasliceClient);
 
         const assetJson = {
             name: 'testing_123',
